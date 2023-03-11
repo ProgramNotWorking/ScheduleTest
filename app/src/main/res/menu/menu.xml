@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:showIn="navigation_view">
+
+    <item android:title="@string/week_days">
+        <menu app:itemBackground="@color/purple">
+            <item android:title="@string/monday"
+                android:id="@+id/mondayId"
+                android:icon="@drawable/selected_day_icon"
+                />
+
+            <item android:title="@string/tuesday"
+                android:id="@+id/tuesdayId"
+                android:icon="@drawable/selected_day_icon"
+                />
+
+            <item android:title="@string/wednesday"
+                android:id="@+id/wednesdayId"
+                android:icon="@drawable/selected_day_icon"
+                />
+
+            <item android:title="@string/thursday"
+                android:id="@+id/thursdayId"
+                android:icon="@drawable/selected_day_icon"
+                />
+
+            <item android:title="@string/friday"
+                android:id="@+id/fridayId"
+                android:icon="@drawable/selected_day_icon"
+                />
+
+            <item android:title="@string/saturday"
+                android:id="@+id/saturdayId"
+                android:icon="@drawable/selected_day_icon"
+                />
+
+            <item android:title="@string/all_days"
+                android:id="@+id/allDaysId"
+                android:icon="@drawable/all_days_list_icon"
+                />
+        </menu>
+    </item>
+
+</menu>

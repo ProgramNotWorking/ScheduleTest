@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Расписание</string>
+    <string name="week_days">Дни недели</string>
+    <string name="monday">Понедельник</string>
+    <string name="tuesday">Вторник</string>
+    <string name="thursday">Четверг</string>
+    <string name="wednesday">Среда</string>
+    <string name="friday">Пятница</string>
+    <string name="saturday">Суббота</string>
+    <string name="enter_name">Введите имя</string>
+    <string name="enter_hours">Часы</string>
+    <string name="all_days">Все дни</string>
+    <string name="delete_lesson">Удалить занятие</string>
+    <string name="add_lesson">Добавить занятие</string>
+    <string name="lesson">Занятие</string>
+    <string name="save">Сохранить</string>
+    <string name="enter_minutes">Минуты</string>
+    <string name="delete">Удалить</string>
+</resources>
