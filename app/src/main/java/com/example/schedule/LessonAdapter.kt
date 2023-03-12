@@ -52,7 +52,5 @@ class LessonAdapter: RecyclerView.Adapter<LessonAdapter.LessonHolder>() {
         lessonList.removeAt(position)
         notifyItemRemoved(position)
         notifyItemRangeChanged(position, lessonList.size)
-
-
     }
 }

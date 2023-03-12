@@ -31,6 +31,15 @@ class MainActivity : AppCompatActivity() {
             navigationView.setNavigationItemSelectedListener {
                 when (it.itemId) {
                     R.id.mondayId -> {
+                        for (item in studentsList) {
+                            if (item.day == DaysConstNames.MONDAY) {
+                                val lesson = Lesson(null, item.name, item.time)
+                                adapter.addLesson(lesson)
+                            }
+                        }
+
+                        // TODO: Think about that
+
                         whatDayIndex = 0
                         clearRcView(howMuchLessons)
                         howMuchLessons = 0
