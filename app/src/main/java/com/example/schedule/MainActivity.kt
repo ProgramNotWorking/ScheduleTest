@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
     private var lessonsCount = 0
     private var whatDayIndex = 0
 
-    private val dbHelper = DatabaseHelper(this) // TODO: Check ChatGPT
+    private val dbHelper = DatabaseHelper(this) // TODO: Check ChatGPT(may be not idk)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,8 +70,25 @@ class MainActivity : AppCompatActivity() {
                         Toast.makeText(
                             this@MainActivity, "Not done yet", Toast.LENGTH_SHORT
                         ).show()
-
                         // TODO: Work on it(oh, rly?)
+
+                        val intent = Intent(
+                            this@MainActivity, AllDaysActivity::class.java
+                        )
+                        val namesArray = ArrayList<String>()
+                        val timeArray = ArrayList<String>()
+                        val daysArray = ArrayList<String>()
+
+                        for (student in studentsList) {
+                            namesArray.add(student.name.toString())
+                            timeArray.add(student.time.toString())
+                            daysArray.add(student.day.toString())
+                        }
+
+                        intent.putExtra("names", namesArray)
+                        intent.putExtra("time", timeArray)
+                        intent.putExtra("days", daysArray)
+                        startActivity(intent)
                     }
                 }
                 drawer.closeDrawer(GravityCompat.START)
@@ -106,33 +123,6 @@ class MainActivity : AppCompatActivity() {
         dbHelper.repopulateDatabase(studentsList)
         dbHelper.close()
         super.onDestroy()
-    }
-
-    private fun temp() {
-        val db = dbHelper.writableDatabase
-
-        val values = ContentValues().apply {
-            for (item in studentsList) {
-                put("name", item.name)
-                put("time", item.time)
-                put("day", item.day)
-            }
-        }
-        db.insert("my_table", null, values)
-
-        val projection = arrayOf("id", "name", "time", "day")
-        val cursor = db.query(
-            "my_table",
-            projection,
-            null,
-            null,
-            null,
-            null,
-            null
-        )
-
-        cursor.close()
-        db.close()
     }
 
     private fun saveData() {

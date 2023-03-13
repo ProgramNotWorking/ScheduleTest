@@ -4,6 +4,151 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/purple"
     tools:context=".AllDaysActivity">
+
+    <LinearLayout
+        android:id="@+id/linearLayoutForDays"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/purple"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <Button
+            android:id="@+id/returnButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.02"
+            android:backgroundTint="@color/purple_darker_custom"
+            android:text="back"
+            android:textColor="@color/white" />
+
+        <TextView
+            android:id="@+id/mondayTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.15"
+            android:gravity="center"
+            android:text="@string/monday"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tuesdayTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.15"
+            android:gravity="center"
+            android:text="@string/tuesday"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/wednesdayTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.15"
+            android:gravity="center"
+            android:text="@string/wednesday"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/thursdayTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.15"
+            android:gravity="center"
+            android:text="@string/thursday"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/fridayTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.15"
+            android:gravity="center"
+            android:text="@string/friday"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/saturdayTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.15"
+            android:gravity="center"
+            android:text="@string/saturday"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="102dp" />
+
+    <LinearLayout
+        android:id="@+id/daysInfoHolderLayout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/pink"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayoutForDays">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/mondayDaysRcView"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.166" >
+
+        </androidx.recyclerview.widget.RecyclerView>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/tuesdayDaysRcView"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.166" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/wednesdayDaysRcView"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.166" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/thursdayDaysRcView"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.166" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/fridayDaysRcView"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.166" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/saturdayDaysRcView"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.166" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
