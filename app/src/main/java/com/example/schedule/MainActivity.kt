@@ -10,13 +10,14 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.GravityCompat
+import androidx.core.view.get
 import androidx.core.view.iterator
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.schedule.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener {
     private lateinit var binding: ActivityMainBinding
-    private val adapter = LessonAdapter()
+    private val adapter = LessonAdapter(this)
     private var allDaysLauncher: ActivityResultLauncher<Intent>? = null
 
     private lateinit var studentsList: MutableList<StudentInfo>
@@ -24,7 +25,7 @@ class MainActivity : AppCompatActivity() {
     private var lessonsCount = 0
     private var whatDayIndex = 0
 
-    private val dbHelper = DatabaseHelper(this) // TODO: Check ChatGPT(may be not idk)
+    private val dbHelper = DatabaseHelper(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,11 +71,6 @@ class MainActivity : AppCompatActivity() {
                         lessonsCount = displayLessonsAndCountIt(whatDayIndex)
                     }
                     R.id.allDaysId -> {
-                        Toast.makeText(
-                            this@MainActivity, "Not done yet", Toast.LENGTH_SHORT
-                        ).show()
-                        // TODO: Work on it(oh, rly?)
-
                         val intent = Intent(
                             this@MainActivity, AllDaysActivity::class.java
                         )
@@ -135,6 +131,54 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    override fun onItemClick(position: Int) {
+        var dayString: String = ""
+        var isDeleteStudent = false
+        val tempStudent = StudentInfo(null, null, null, null)
+
+        when (whatDayIndex) {
+            0 -> dayString = DaysConstNames.MONDAY
+            1 -> dayString = DaysConstNames.TUESDAY
+            2 -> dayString = DaysConstNames.WEDNESDAY
+            3 -> dayString = DaysConstNames.THURSDAY
+            4 -> dayString = DaysConstNames.FRIDAY
+            5 -> dayString = DaysConstNames.SATURDAY
+        }
+
+        for (student in studentsList) {
+            if (
+                student.name.equals(binding.rcView[position].findViewById<EditText>(R.id.editNameField).text.toString())
+                &&
+                student.time.equals(binding.rcView[position].findViewById<EditText>(R.id.editTimeField).text.toString())
+                &&
+                student.day.equals(dayString)
+            ) {
+                isDeleteStudent = true
+                tempStudent.name = student.name
+                tempStudent.time = student.time
+                tempStudent.day = student.day
+
+                break
+            }
+        }
+
+        if (isDeleteStudent) {
+            for (item in 0 until studentsList.size) {
+                if (
+                    studentsList[item].name.equals(tempStudent.name) &&
+                    studentsList[item].time.equals(tempStudent.time) &&
+                    studentsList[item].day.equals(tempStudent.day)
+                ) {
+                    studentsList.removeAt(item)
+                    break
+                }
+            }
+        }
+
+        adapter.removeLesson(position)
+        lessonsCount -= 1
+    }
+
     private fun saveData() {
         var isHaveThatStudent: Boolean
         var dayString: String = ""
@@ -179,6 +223,7 @@ class MainActivity : AppCompatActivity() {
                     student.day.equals(tempStudent.day)
                 ) {
                     isHaveThatStudent = true
+                    break
                 }
             }
 

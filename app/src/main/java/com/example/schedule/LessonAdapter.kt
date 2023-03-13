@@ -7,11 +7,15 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.schedule.databinding.LessonItemBinding
 
-class LessonAdapter: RecyclerView.Adapter<LessonAdapter.LessonHolder>() {
+class LessonAdapter(private val listener: OnItemClickListener): RecyclerView.Adapter<LessonAdapter.LessonHolder>() {
     private val lessonList = ArrayList<Lesson>()
 
-    class LessonHolder(item: View): RecyclerView.ViewHolder(item) {
+    inner class LessonHolder(item: View): RecyclerView.ViewHolder(item), View.OnClickListener {
         private val binding = LessonItemBinding.bind(item)
+
+        init {
+            binding.deleteStudentButton.setOnClickListener(this)
+        }
 
         fun bind(lesson: Lesson) = with(binding) {
             if (lesson.studentName != null) {
@@ -23,6 +27,12 @@ class LessonAdapter: RecyclerView.Adapter<LessonAdapter.LessonHolder>() {
                 editTimeField.setText(lesson.lessonTime)
             } else {
                 editTimeField.text = null
+            }
+        }
+
+        override fun onClick(view: View) {
+            if (view.id == R.id.deleteStudentButton) {
+                listener.onItemClick(adapterPosition)
             }
         }
     }
@@ -52,5 +62,9 @@ class LessonAdapter: RecyclerView.Adapter<LessonAdapter.LessonHolder>() {
         lessonList.removeAt(position)
         notifyItemRemoved(position)
         notifyItemRangeChanged(position, lessonList.size)
+    }
+
+    interface OnItemClickListener {
+        fun onItemClick(position: Int)
     }
 }
