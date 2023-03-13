@@ -3,10 +3,6 @@ package com.example.schedule
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.widget.TextView
-import androidx.core.view.iterator
-import androidx.core.view.size
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.schedule.databinding.ActivityAllDaysBinding
 
@@ -32,9 +28,7 @@ class AllDaysActivity : AppCompatActivity() {
         timeArray = intent.getStringArrayListExtra("time") as ArrayList<String>
         daysArray = intent.getStringArrayListExtra("days") as ArrayList<String>
 
-        _init_() // work with only first
-
-        Log.d("Test:", binding.saturdayDaysRcView.size.toString())
+        _init_()
 
         binding.apply {
             returnButton.setOnClickListener {
@@ -63,6 +57,7 @@ class AllDaysActivity : AppCompatActivity() {
             saturdayDaysRcView.adapter = saturdayAdapter
 
             for (item in 0 until daysArray.size) {
+
                 when (daysArray[item]) {
                     DaysConstNames.MONDAY -> {
                         val lesson = Lesson(null, namesArray[item], timeArray[item])
