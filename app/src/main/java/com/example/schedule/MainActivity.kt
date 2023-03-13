@@ -7,6 +7,9 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.GravityCompat
 import androidx.core.view.iterator
 import androidx.recyclerview.widget.GridLayoutManager
@@ -15,6 +18,7 @@ import com.example.schedule.databinding.ActivityMainBinding
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val adapter = LessonAdapter()
+    private var allDaysLauncher: ActivityResultLauncher<Intent>? = null
 
     private lateinit var studentsList: MutableList<StudentInfo>
 
@@ -88,7 +92,7 @@ class MainActivity : AppCompatActivity() {
                         intent.putExtra("names", namesArray)
                         intent.putExtra("time", timeArray)
                         intent.putExtra("days", daysArray)
-                        startActivity(intent)
+                        allDaysLauncher?.launch(intent)
                     }
                 }
                 drawer.closeDrawer(GravityCompat.START)
@@ -115,6 +119,13 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 true
+            }
+
+            allDaysLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                result: ActivityResult ->
+                if (result.resultCode == RESULT_OK) {
+                    Log.d("Test with ActRes:", "WORK")
+                }
             }
         }
     }
@@ -197,7 +208,6 @@ class MainActivity : AppCompatActivity() {
                         val lesson = Lesson(null, item.name, item.time)
                         adapter.addLesson(lesson)
                         lessonsIndex++
-
                     }
                 }
             }

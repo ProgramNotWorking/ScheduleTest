@@ -3,6 +3,10 @@ package com.example.schedule
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.widget.TextView
+import androidx.core.view.iterator
+import androidx.core.view.size
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.schedule.databinding.ActivityAllDaysBinding
 
@@ -30,9 +34,14 @@ class AllDaysActivity : AppCompatActivity() {
 
         _init_() // work with only first
 
+        Log.d("Test:", binding.saturdayDaysRcView.size.toString())
+
         binding.apply {
             returnButton.setOnClickListener {
-                startActivity(Intent(this@AllDaysActivity, MainActivity::class.java))
+                setResult(
+                    RESULT_OK, Intent(this@AllDaysActivity, MainActivity::class.java)
+                )
+                finish()
             }
         }
     }
@@ -56,27 +65,27 @@ class AllDaysActivity : AppCompatActivity() {
             for (item in 0 until daysArray.size) {
                 when (daysArray[item]) {
                     DaysConstNames.MONDAY -> {
-                        val lesson = Lesson(null, namesArray[item], daysArray[item])
+                        val lesson = Lesson(null, namesArray[item], timeArray[item])
                         mondayAdapter.addLessonInfo(lesson)
                     }
                     DaysConstNames.TUESDAY -> {
-                        val lesson = Lesson(null, namesArray[item], daysArray[item])
+                        val lesson = Lesson(null, namesArray[item], timeArray[item])
                         tuesdayAdapter.addLessonInfo(lesson)
                     }
                     DaysConstNames.WEDNESDAY -> {
-                        val lesson = Lesson(null, namesArray[item], daysArray[item])
+                        val lesson = Lesson(null, namesArray[item], timeArray[item])
                         wednesdayAdapter.addLessonInfo(lesson)
                     }
                     DaysConstNames.THURSDAY -> {
-                        val lesson = Lesson(null, namesArray[item], daysArray[item])
+                        val lesson = Lesson(null, namesArray[item], timeArray[item])
                         thursdayAdapter.addLessonInfo(lesson)
                     }
                     DaysConstNames.FRIDAY -> {
-                        val lesson = Lesson(null, namesArray[item], daysArray[item])
+                        val lesson = Lesson(null, namesArray[item], timeArray[item])
                         fridayAdapter.addLessonInfo(lesson)
                     }
                     DaysConstNames.SATURDAY -> {
-                        val lesson = Lesson(null, namesArray[item], daysArray[item])
+                        val lesson = Lesson(null, namesArray[item], timeArray[item])
                         saturdayAdapter.addLessonInfo(lesson)
                     }
                 }
