@@ -9,12 +9,11 @@
     <string name="friday">Пятница</string>
     <string name="saturday">Суббота</string>
     <string name="enter_name">Введите имя</string>
-    <string name="enter_hours">Часы</string>
+    <string name="enter_time">Введите время</string>
     <string name="all_days">Все дни</string>
-    <string name="delete_lesson">Удалить занятие</string>
     <string name="add_lesson">Добавить занятие</string>
     <string name="lesson">Занятие</string>
     <string name="save">Сохранить</string>
-    <string name="enter_minutes">Минуты</string>
     <string name="delete">Удалить</string>
+    <string name="open_menu">Меню</string>
 </resources>

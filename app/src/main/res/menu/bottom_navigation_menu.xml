@@ -2,10 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/deleteLessonId"
-        android:icon="@drawable/delete_lesson_icon"
+        android:id="@+id/open_menu"
+        android:icon="@drawable/open_menu_icon"
         android:orderInCategory="1"
-        android:title="@string/delete_lesson" />
+        android:title="@string/open_menu"
+        />
 
     <item
         android:id="@+id/addLessonId"
