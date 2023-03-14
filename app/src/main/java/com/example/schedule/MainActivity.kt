@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -33,65 +34,15 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener {
         setContentView(binding.root)
 
         studentsList = dbHelper.getAllStudents()
+        lessonsCount = displayLessonsAndCountIt(whatDayIndex)
 
         binding.apply {
             rcView.layoutManager = GridLayoutManager(this@MainActivity, 1)
             rcView.adapter = adapter
 
             navigationView.setNavigationItemSelectedListener {
-                when (it.itemId) {
-                    R.id.mondayId -> {
-                        whatDayIndex = 0
-                        clearRcView(lessonsCount)
-                        lessonsCount = displayLessonsAndCountIt(whatDayIndex)
-                    }
-                    R.id.tuesdayId -> {
-                        whatDayIndex = 1
-                        clearRcView(lessonsCount)
-                        lessonsCount = displayLessonsAndCountIt(whatDayIndex)
-                    }
-                    R.id.wednesdayId -> {
-                        whatDayIndex = 2
-                        clearRcView(lessonsCount)
-                        lessonsCount = displayLessonsAndCountIt(whatDayIndex)
-                    }
-                    R.id.thursdayId -> {
-                        whatDayIndex = 3
-                        clearRcView(lessonsCount)
-                        lessonsCount = displayLessonsAndCountIt(whatDayIndex)
-                    }
-                    R.id.fridayId -> {
-                        whatDayIndex = 4
-                        clearRcView(lessonsCount)
-                        lessonsCount = displayLessonsAndCountIt(whatDayIndex)
-                    }
-                    R.id.saturdayId -> {
-                        whatDayIndex = 5
-                        clearRcView(lessonsCount)
-                        lessonsCount = displayLessonsAndCountIt(whatDayIndex)
-                    }
-                    R.id.allDaysId -> {
-                        val intent = Intent(
-                            this@MainActivity, AllDaysActivity::class.java
-                        )
-                        val namesArray = ArrayList<String>()
-                        val timeArray = ArrayList<String>()
-                        val daysArray = ArrayList<String>()
-
-                        for (student in studentsList) {
-                            namesArray.add(student.name.toString())
-                            timeArray.add(student.time.toString())
-                            daysArray.add(student.day.toString())
-                        }
-
-                        intent.putExtra("names", namesArray)
-                        intent.putExtra("time", timeArray)
-                        intent.putExtra("days", daysArray)
-                        allDaysLauncher?.launch(intent)
-                    }
-                }
+                menu_init(it)
                 drawer.closeDrawer(GravityCompat.START)
-
                 true
             }
 
@@ -100,7 +51,7 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener {
                     R.id.saveId -> {
                         saveData()
                         Toast.makeText(
-                            this@MainActivity, "Saved", Toast.LENGTH_SHORT
+                            this@MainActivity, getString(R.string.saved), Toast.LENGTH_SHORT
                         ).show()
                     }
                     R.id.addLessonId -> {
@@ -132,18 +83,9 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener {
     }
 
     override fun onItemClick(position: Int) {
-        var dayString: String = ""
+        val dayString = setDay(whatDayIndex)
         var isDeleteStudent = false
         val tempStudent = StudentInfo(null, null, null, null)
-
-        when (whatDayIndex) {
-            0 -> dayString = DaysConstNames.MONDAY
-            1 -> dayString = DaysConstNames.TUESDAY
-            2 -> dayString = DaysConstNames.WEDNESDAY
-            3 -> dayString = DaysConstNames.THURSDAY
-            4 -> dayString = DaysConstNames.FRIDAY
-            5 -> dayString = DaysConstNames.SATURDAY
-        }
 
         for (student in studentsList) {
             if (
@@ -181,16 +123,7 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener {
 
     private fun saveData() {
         var isHaveThatStudent: Boolean
-        var dayString: String = ""
-
-        when (whatDayIndex) {
-            0 -> dayString = DaysConstNames.MONDAY
-            1 -> dayString = DaysConstNames.TUESDAY
-            2 -> dayString = DaysConstNames.WEDNESDAY
-            3 -> dayString = DaysConstNames.THURSDAY
-            4 -> dayString = DaysConstNames.FRIDAY
-            5 -> dayString = DaysConstNames.SATURDAY
-        }
+        val dayString = setDay(whatDayIndex)
 
         if (studentsList.isNotEmpty()) {
             for (item in studentsList.size - 1 downTo 0) {
@@ -206,15 +139,7 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener {
 
             tempStudent.name = item.findViewById<EditText>(R.id.editNameField).text?.toString()
             tempStudent.time = item.findViewById<EditText>(R.id.editTimeField).text?.toString()
-
-            when (whatDayIndex) {
-                0 -> tempStudent.day = DaysConstNames.MONDAY
-                1 -> tempStudent.day = DaysConstNames.TUESDAY
-                2 -> tempStudent.day = DaysConstNames.WEDNESDAY
-                3 -> tempStudent.day = DaysConstNames.THURSDAY
-                4 -> tempStudent.day = DaysConstNames.FRIDAY
-                5 -> tempStudent.day = DaysConstNames.SATURDAY
-            }
+            tempStudent.day = setDay(whatDayIndex)
 
             for (student in studentsList) {
                 if (
@@ -304,6 +229,72 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener {
                 adapter.removeLesson(tempIndexOfPosition)
                 tempIndexOfPosition -= 1
             }
+        }
+    }
+
+    private fun menu_init(it: MenuItem) {
+        when (it.itemId) {
+            R.id.mondayId -> {
+                whatDayIndex = 0
+                clearRcView(lessonsCount)
+                lessonsCount = displayLessonsAndCountIt(whatDayIndex)
+            }
+            R.id.tuesdayId -> {
+                whatDayIndex = 1
+                clearRcView(lessonsCount)
+                lessonsCount = displayLessonsAndCountIt(whatDayIndex)
+            }
+            R.id.wednesdayId -> {
+                whatDayIndex = 2
+                clearRcView(lessonsCount)
+                lessonsCount = displayLessonsAndCountIt(whatDayIndex)
+            }
+            R.id.thursdayId -> {
+                whatDayIndex = 3
+                clearRcView(lessonsCount)
+                lessonsCount = displayLessonsAndCountIt(whatDayIndex)
+            }
+            R.id.fridayId -> {
+                whatDayIndex = 4
+                clearRcView(lessonsCount)
+                lessonsCount = displayLessonsAndCountIt(whatDayIndex)
+            }
+            R.id.saturdayId -> {
+                whatDayIndex = 5
+                clearRcView(lessonsCount)
+                lessonsCount = displayLessonsAndCountIt(whatDayIndex)
+            }
+            R.id.allDaysId -> {
+                val intent = Intent(
+                    this@MainActivity, AllDaysActivity::class.java
+                )
+                val namesArray = ArrayList<String>()
+                val timeArray = ArrayList<String>()
+                val daysArray = ArrayList<String>()
+
+                for (student in studentsList) {
+                    namesArray.add(student.name.toString())
+                    timeArray.add(student.time.toString())
+                    daysArray.add(student.day.toString())
+                }
+
+                intent.putExtra("names", namesArray)
+                intent.putExtra("time", timeArray)
+                intent.putExtra("days", daysArray)
+                allDaysLauncher?.launch(intent)
+            }
+        }
+    }
+
+    private fun setDay(day: Int): String? {
+        return when (day) {
+            0 -> DaysConstNames.MONDAY
+            1 -> DaysConstNames.TUESDAY
+            2 -> DaysConstNames.WEDNESDAY
+            3 -> DaysConstNames.THURSDAY
+            4 -> DaysConstNames.FRIDAY
+            5 -> DaysConstNames.SATURDAY
+            else -> null
         }
     }
 }
