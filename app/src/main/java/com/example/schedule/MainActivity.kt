@@ -1,5 +1,6 @@
 package com.example.schedule
 
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -15,13 +16,26 @@ import androidx.core.view.get
 import androidx.core.view.iterator
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.schedule.databinding.ActivityMainBinding
+import java.io.BufferedReader
+import java.io.BufferedWriter
+import java.io.File
+import java.io.FileReader
+import java.io.FileWriter
 
-class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener {
+class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener { // check OnClickDelete method
     private lateinit var binding: ActivityMainBinding
     private val adapter = LessonAdapter(this)
     private var allDaysLauncher: ActivityResultLauncher<Intent>? = null
 
+    // private var studentsList = ArrayList<StudentInfo>()
     private lateinit var studentsList: MutableList<StudentInfo>
+
+    private lateinit var namesTextFile: File
+    private lateinit var timeTextFile: File
+    private lateinit var daysTextFile: File
+    private lateinit var namesWriter: BufferedWriter
+    private lateinit var timeWriter: BufferedWriter
+    private lateinit var daysWriter: BufferedWriter
 
     private var lessonsCount = 0
     private var whatDayIndex = 0
@@ -33,15 +47,30 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val namesDir = this.getDir("names_folder", Context.MODE_PRIVATE)
+        val timeDir = this.getDir("time_folder", Context.MODE_PRIVATE)
+        val daysDir = this.getDir("days_folder", Context.MODE_PRIVATE)
+
+        namesTextFile =  File(namesDir, "names_file.txt")
+        timeTextFile = File(timeDir, "time_file.txt")
+        daysTextFile = File(daysDir, "days_file.txt")
+
+        namesWriter = BufferedWriter(FileWriter(namesTextFile))
+        timeWriter = BufferedWriter(FileWriter(timeTextFile))
+        daysWriter = BufferedWriter(FileWriter(daysTextFile))
+
         studentsList = dbHelper.getAllStudents()
+        // fillStudentsList()
         lessonsCount = displayLessonsAndCountIt(whatDayIndex)
 
         binding.apply {
             rcView.layoutManager = GridLayoutManager(this@MainActivity, 1)
             rcView.adapter = adapter
 
+            whatDayTextView.text = getString(R.string.monday)
+
             navigationView.setNavigationItemSelectedListener {
-                menu_init(it)
+                menu_init(it) // <------ check inner of this
                 drawer.closeDrawer(GravityCompat.START)
                 true
             }
@@ -55,6 +84,11 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener {
                         ).show()
                     }
                     R.id.addLessonId -> {
+                        for (item in rcView) {
+                            item.findViewById<EditText>(R.id.editNameField).clearFocus()
+                            item.findViewById<EditText>(R.id.editTimeField).clearFocus()
+                        }
+
                         val lesson = Lesson(lessonsCount, null, null)
                         adapter.addLesson(lesson)
                         lessonsCount++
@@ -70,16 +104,18 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener {
             allDaysLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                 result: ActivityResult ->
                 if (result.resultCode == RESULT_OK) {
-                    Log.d("Test with ActRes:", "WORK")
+                    Log.d("Result Log", "Fine")
                 }
             }
         }
     }
 
     override fun onDestroy() {
+        // saveDataOnDestroy()
+
+        super.onDestroy()
         dbHelper.repopulateDatabase(studentsList)
         dbHelper.close()
-        super.onDestroy()
     }
 
     override fun onItemClick(position: Int) {
@@ -119,6 +155,85 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener {
 
         adapter.removeLesson(position)
         lessonsCount -= 1
+
+        var isFindNeededStudent = false
+        var neededStudentIndex = 0
+        for (item in binding.rcView) {
+            for (student in neededStudentIndex until studentsList.size) {
+                if (studentsList[student].day.equals(dayString)) {
+                    item.findViewById<EditText>(R.id.editNameField).setText(studentsList[student].name)
+                    item.findViewById<EditText>(R.id.editTimeField).setText(studentsList[student].time)
+
+                    isFindNeededStudent = true
+                }
+                if (isFindNeededStudent) {
+                    neededStudentIndex++
+                    break
+                }
+                else
+                    neededStudentIndex++
+            }
+
+            isFindNeededStudent = false
+        }
+    }
+
+    private fun fillStudentsList() {
+        if (studentsList.isEmpty()) {
+            studentsList.clear()
+        }
+
+        val namesReader = BufferedReader(FileReader(namesTextFile))
+        val timeReader = BufferedReader(FileReader(timeTextFile))
+        val daysReader = BufferedReader(FileReader(daysTextFile))
+
+        val tempStudent = StudentInfo(null, null, null, null)
+        val namesArray = ArrayList<String>()
+        val timeArray = ArrayList<String>()
+        val daysArray = ArrayList<String>()
+
+        var lineInNames: String? = namesReader.readLine()
+        var lineInTime: String? = timeReader.readLine()
+        var lineInDays: String? = daysReader.readLine()
+        while (lineInNames != null) {
+            namesArray.add(lineInNames)
+            lineInNames = namesReader.readLine()
+        }
+        while (lineInTime != null) {
+            timeArray.add(lineInTime)
+            lineInTime = timeReader.readLine()
+        }
+        while (lineInDays != null) {
+            daysArray.add(lineInDays)
+            lineInDays = daysReader.readLine()
+        }
+
+        for (index in 0 until namesArray.size) {
+            tempStudent.name = namesArray[index]
+            tempStudent.time = timeArray[index]
+            tempStudent.day = daysArray[index]
+
+            studentsList.add(tempStudent)
+        }
+
+        namesReader.close()
+        timeReader.close()
+        daysReader.close()
+    }
+
+    private fun saveDataOnDestroy() {
+        for (item in studentsList) {
+            namesWriter.write(item.name)
+            namesWriter.newLine()
+            timeWriter.write(item.time)
+            timeWriter.newLine()
+            daysWriter.write(item.day)
+            daysWriter.newLine()
+        }
+
+        namesWriter.close()
+        timeWriter.close()
+        daysWriter.close()
     }
 
     private fun saveData() {
@@ -236,31 +351,37 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener {
         when (it.itemId) {
             R.id.mondayId -> {
                 whatDayIndex = 0
+                binding.whatDayTextView.text = getString(R.string.monday)
                 clearRcView(lessonsCount)
                 lessonsCount = displayLessonsAndCountIt(whatDayIndex)
             }
             R.id.tuesdayId -> {
                 whatDayIndex = 1
+                binding.whatDayTextView.text = getString(R.string.tuesday)
                 clearRcView(lessonsCount)
                 lessonsCount = displayLessonsAndCountIt(whatDayIndex)
             }
             R.id.wednesdayId -> {
                 whatDayIndex = 2
+                binding.whatDayTextView.text = getString(R.string.wednesday)
                 clearRcView(lessonsCount)
                 lessonsCount = displayLessonsAndCountIt(whatDayIndex)
             }
             R.id.thursdayId -> {
                 whatDayIndex = 3
+                binding.whatDayTextView.text = getString(R.string.thursday)
                 clearRcView(lessonsCount)
                 lessonsCount = displayLessonsAndCountIt(whatDayIndex)
             }
             R.id.fridayId -> {
                 whatDayIndex = 4
+                binding.whatDayTextView.text = getString(R.string.friday)
                 clearRcView(lessonsCount)
                 lessonsCount = displayLessonsAndCountIt(whatDayIndex)
             }
             R.id.saturdayId -> {
                 whatDayIndex = 5
+                binding.whatDayTextView.text = getString(R.string.saturday)
                 clearRcView(lessonsCount)
                 lessonsCount = displayLessonsAndCountIt(whatDayIndex)
             }
@@ -272,7 +393,7 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener {
                 val timeArray = ArrayList<String>()
                 val daysArray = ArrayList<String>()
 
-                for (student in studentsList) {
+                for (student in studentsList) { // puts 3 item max
                     namesArray.add(student.name.toString())
                     timeArray.add(student.time.toString())
                     daysArray.add(student.day.toString())

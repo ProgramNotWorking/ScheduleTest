@@ -22,16 +22,16 @@
             android:id="@+id/returnButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.02"
+            android:layout_weight="0.015"
             android:backgroundTint="@color/purple_darker_custom"
-            android:text="back"
+            android:text="@string/back"
             android:textColor="@color/white" />
 
         <TextView
             android:id="@+id/mondayTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.15"
+            android:layout_weight="0.17"
             android:gravity="center"
             android:text="@string/monday"
             android:textColor="@color/white"
@@ -99,7 +99,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_begin="102dp" />
+        app:layout_constraintGuide_end="629dp" />
 
     <LinearLayout
         android:id="@+id/daysInfoHolderLayout"

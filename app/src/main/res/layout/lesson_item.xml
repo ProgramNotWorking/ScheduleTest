@@ -44,7 +44,7 @@
                     android:id="@+id/deleteStudentButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.3"
+                    android:layout_weight="0.4"
                     android:backgroundTint="@color/purple_darker_custom"
                     android:text="@string/delete" />
 

@@ -66,7 +66,7 @@ class DatabaseHelper(context: Context): SQLiteOpenHelper(
         return studentsList
     }
 
-    fun deleteAllStudents() {
+    private fun deleteAllStudents() {
         val db = this.writableDatabase
         db.delete(TABLE_NAME, null, null)
         db.close()
