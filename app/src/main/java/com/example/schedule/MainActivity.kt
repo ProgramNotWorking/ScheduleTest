@@ -1,20 +1,25 @@
 package com.example.schedule
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
+import android.inputmethodservice.InputMethodService
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.getSystemService
 import androidx.core.view.GravityCompat
 import androidx.core.view.get
 import androidx.core.view.iterator
+import androidx.core.view.size
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.schedule.databinding.ActivityMainBinding
 import com.example.schedule.db.DatabaseManager
@@ -27,6 +32,9 @@ class MainActivity : AppCompatActivity(),
     private var isKeyboardVisible = false
 
     private lateinit var studentsList: MutableList<StudentInfo>
+
+    private val tempNamesArrayForRcViewAdding = ArrayList<String?>()
+    private val tempTimeArrayForRcViewAdding = ArrayList<String?>()
 
     private var lessonsCount = 0
     private var whatDayIndex = 0
@@ -41,27 +49,13 @@ class MainActivity : AppCompatActivity(),
         dbManager.openDb()
         studentsList = dbManager.readDbData()
 
-        lessonsCount = displayLessonsAndCountIt(whatDayIndex)
+        lessonsCount = displayLessonsAndCountIt()
 
         binding.apply {
             rcView.layoutManager = GridLayoutManager(this@MainActivity, 1)
             rcView.adapter = adapter
 
             whatDayTextView.text = getString(R.string.monday)
-
-            window.decorView.viewTreeObserver.addOnGlobalLayoutListener {
-                val rect = Rect()
-
-                window.decorView.getWindowVisibleDisplayFrame(rect)
-                val screenHeight = window.decorView.height
-                val keypadHeight = screenHeight - rect.bottom
-
-                if (keypadHeight > screenHeight * 0.15)
-                    bottomNavigationView.visibility = View.GONE
-                else
-                    bottomNavigationView.visibility = View.VISIBLE
-
-            }
 
             navigationView.setNavigationItemSelectedListener {
                 menu_init(it) // <------ check inner of this
@@ -71,22 +65,15 @@ class MainActivity : AppCompatActivity(),
 
             bottomNavigationView.setOnItemSelectedListener {
                 when (it.itemId) {
-                    R.id.saveId -> {
-                        saveData()
-                        Toast.makeText(
-                            this@MainActivity, getString(R.string.saved), Toast.LENGTH_SHORT
-                        ).show()
-                    }
                     R.id.addLessonId -> {
-                        for (item in rcView) {
-                            item.findViewById<EditText>(R.id.editNameField).clearFocus()
-                            item.findViewById<EditText>(R.id.editTimeField).clearFocus()
-                        }
+                        saveData()
 
-                        correctAdding()
+                        val lesson = Lesson(lessonsCount, null, null)
+                        adapter.addLesson(lesson)
                         lessonsCount++
                     }
                     R.id.open_menu -> {
+                        saveData()
                         drawer.openDrawer(GravityCompat.START)
                     }
                 }
@@ -111,32 +98,6 @@ class MainActivity : AppCompatActivity(),
     override fun onDestroy() {
         super.onDestroy()
         dbManager.close()
-    }
-
-    private fun correctAdding() {
-        val tempNamesArray = ArrayList<String>()
-        val tempTimeArray = ArrayList<String>()
-
-        for (item in binding.rcView) {
-            if (
-                item.findViewById<EditText>(R.id.editNameField).text != null &&
-                item.findViewById<EditText>(R.id.editTimeField).text != null
-            ) {
-                tempNamesArray.add(item.findViewById<EditText>(R.id.editNameField).text.toString())
-                tempTimeArray.add(item.findViewById<EditText>(R.id.editTimeField).text.toString())
-            }
-        }
-
-        val lesson = Lesson(lessonsCount, null, null)
-        adapter.addLesson(lesson)
-
-        binding.apply {
-            for (item in 0 until tempNamesArray.size) {
-                rcView[item].findViewById<EditText>(R.id.editNameField)
-                    .setText(tempNamesArray[item])
-                rcView[item].findViewById<EditText>(R.id.editTimeField).setText(tempTimeArray[item])
-            }
-        }
     }
 
     override fun onItemClick(position: Int) {
@@ -182,10 +143,8 @@ class MainActivity : AppCompatActivity(),
         for (item in binding.rcView) {
             for (student in neededStudentIndex until studentsList.size) {
                 if (studentsList[student].day.equals(dayString)) {
-                    item.findViewById<EditText>(R.id.editNameField)
-                        .setText(studentsList[student].name)
-                    item.findViewById<EditText>(R.id.editTimeField)
-                        .setText(studentsList[student].time)
+                    item.findViewById<EditText>(R.id.editNameField).setText(studentsList[student].name)
+                    item.findViewById<EditText>(R.id.editTimeField).setText(studentsList[student].time)
 
                     isFindNeededStudent = true
                 }
@@ -201,7 +160,6 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun saveData() {
-        var isHaveThatStudent: Boolean
         val dayString = setDay(whatDayIndex)
 
         if (studentsList.isNotEmpty()) {
@@ -220,13 +178,33 @@ class MainActivity : AppCompatActivity(),
             tempStudent.day = dayString
 
             studentsList.add(tempStudent)
+
+//            for (student in studentsList) {
+//                if (
+//                    student.day.equals(tempStudent.day) &&
+//                    student.time != tempStudent.time
+//                ) {
+//                    studentsList.add(tempStudent)
+//                    break
+//                }
+//            }
         }
+
+//        for (item in binding.rcView) {
+//            val tempStudent = StudentInfo(null, null, null, null)
+//
+//            tempStudent.name = item.findViewById<EditText>(R.id.editNameField).text?.toString()
+//            tempStudent.time = item.findViewById<EditText>(R.id.editTimeField).text?.toString()
+//            tempStudent.day = dayString
+//
+//            studentsList.add(tempStudent)
+//        }
     }
 
-    private fun displayLessonsAndCountIt(dayIndex: Int): Int {
+    private fun displayLessonsAndCountIt(): Int {
         var lessonsIndex = 0
 
-        when (dayIndex) {
+        when (whatDayIndex) {
             0 -> {
                 for (item in studentsList) {
                     if (item.day == DaysConstNames.MONDAY) {
@@ -300,42 +278,50 @@ class MainActivity : AppCompatActivity(),
     private fun menu_init(it: MenuItem) {
         when (it.itemId) {
             R.id.mondayId -> {
+                saveData()
                 whatDayIndex = 0
                 binding.whatDayTextView.text = getString(R.string.monday)
                 clearRcView(lessonsCount)
-                lessonsCount = displayLessonsAndCountIt(whatDayIndex)
+                lessonsCount = displayLessonsAndCountIt()
             }
             R.id.tuesdayId -> {
+                saveData()
                 whatDayIndex = 1
                 binding.whatDayTextView.text = getString(R.string.tuesday)
                 clearRcView(lessonsCount)
-                lessonsCount = displayLessonsAndCountIt(whatDayIndex)
+                lessonsCount = displayLessonsAndCountIt()
             }
             R.id.wednesdayId -> {
+                saveData()
                 whatDayIndex = 2
                 binding.whatDayTextView.text = getString(R.string.wednesday)
                 clearRcView(lessonsCount)
-                lessonsCount = displayLessonsAndCountIt(whatDayIndex)
+                lessonsCount = displayLessonsAndCountIt()
             }
             R.id.thursdayId -> {
+                saveData()
                 whatDayIndex = 3
                 binding.whatDayTextView.text = getString(R.string.thursday)
                 clearRcView(lessonsCount)
-                lessonsCount = displayLessonsAndCountIt(whatDayIndex)
+                lessonsCount = displayLessonsAndCountIt()
             }
             R.id.fridayId -> {
+                saveData()
                 whatDayIndex = 4
                 binding.whatDayTextView.text = getString(R.string.friday)
                 clearRcView(lessonsCount)
-                lessonsCount = displayLessonsAndCountIt(whatDayIndex)
+                lessonsCount = displayLessonsAndCountIt()
             }
             R.id.saturdayId -> {
+                saveData()
                 whatDayIndex = 5
                 binding.whatDayTextView.text = getString(R.string.saturday)
                 clearRcView(lessonsCount)
-                lessonsCount = displayLessonsAndCountIt(whatDayIndex)
+                lessonsCount = displayLessonsAndCountIt()
             }
             R.id.allDaysId -> {
+                saveData()
+
                 val intent = Intent(
                     this@MainActivity, AllDaysActivity::class.java
                 )

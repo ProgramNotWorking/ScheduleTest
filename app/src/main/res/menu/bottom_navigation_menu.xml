@@ -11,13 +11,7 @@
     <item
         android:id="@+id/addLessonId"
         android:icon="@drawable/add_lesson_icon"
-        android:orderInCategory="3"
-        android:title="@string/add_lesson" />
-
-    <item
-        android:id="@+id/saveId"
-        android:icon="@drawable/save_icon"
         android:orderInCategory="2"
-        android:title="@string/save" />
+        android:title="@string/add_lesson" />
 
 </menu>
