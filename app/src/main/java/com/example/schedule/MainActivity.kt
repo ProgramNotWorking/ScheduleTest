@@ -1,11 +1,12 @@
 package com.example.schedule
 
-import android.content.Context
 import android.content.Intent
+import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -16,51 +17,30 @@ import androidx.core.view.get
 import androidx.core.view.iterator
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.schedule.databinding.ActivityMainBinding
-import java.io.BufferedReader
-import java.io.BufferedWriter
-import java.io.File
-import java.io.FileReader
-import java.io.FileWriter
+import com.example.schedule.db.DatabaseManager
 
-class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener { // check OnClickDelete method
+class MainActivity : AppCompatActivity(),
+    LessonAdapter.OnItemClickListener { // check OnClickDelete method
     private lateinit var binding: ActivityMainBinding
     private val adapter = LessonAdapter(this)
     private var allDaysLauncher: ActivityResultLauncher<Intent>? = null
+    private var isKeyboardVisible = false
 
-    // private var studentsList = ArrayList<StudentInfo>()
     private lateinit var studentsList: MutableList<StudentInfo>
-
-    private lateinit var namesTextFile: File
-    private lateinit var timeTextFile: File
-    private lateinit var daysTextFile: File
-    private lateinit var namesWriter: BufferedWriter
-    private lateinit var timeWriter: BufferedWriter
-    private lateinit var daysWriter: BufferedWriter
 
     private var lessonsCount = 0
     private var whatDayIndex = 0
 
-    private val dbHelper = DatabaseHelper(this)
+    private val dbManager = DatabaseManager(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val namesDir = this.getDir("names_folder", Context.MODE_PRIVATE)
-        val timeDir = this.getDir("time_folder", Context.MODE_PRIVATE)
-        val daysDir = this.getDir("days_folder", Context.MODE_PRIVATE)
+        dbManager.openDb()
+        studentsList = dbManager.readDbData()
 
-        namesTextFile =  File(namesDir, "names_file.txt")
-        timeTextFile = File(timeDir, "time_file.txt")
-        daysTextFile = File(daysDir, "days_file.txt")
-
-        namesWriter = BufferedWriter(FileWriter(namesTextFile))
-        timeWriter = BufferedWriter(FileWriter(timeTextFile))
-        daysWriter = BufferedWriter(FileWriter(daysTextFile))
-
-        studentsList = dbHelper.getAllStudents()
-        // fillStudentsList()
         lessonsCount = displayLessonsAndCountIt(whatDayIndex)
 
         binding.apply {
@@ -68,6 +48,20 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener { //
             rcView.adapter = adapter
 
             whatDayTextView.text = getString(R.string.monday)
+
+            window.decorView.viewTreeObserver.addOnGlobalLayoutListener {
+                val rect = Rect()
+
+                window.decorView.getWindowVisibleDisplayFrame(rect)
+                val screenHeight = window.decorView.height
+                val keypadHeight = screenHeight - rect.bottom
+
+                if (keypadHeight > screenHeight * 0.15)
+                    bottomNavigationView.visibility = View.GONE
+                else
+                    bottomNavigationView.visibility = View.VISIBLE
+
+            }
 
             navigationView.setNavigationItemSelectedListener {
                 menu_init(it) // <------ check inner of this
@@ -89,8 +83,7 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener { //
                             item.findViewById<EditText>(R.id.editTimeField).clearFocus()
                         }
 
-                        val lesson = Lesson(lessonsCount, null, null)
-                        adapter.addLesson(lesson)
+                        correctAdding()
                         lessonsCount++
                     }
                     R.id.open_menu -> {
@@ -101,21 +94,49 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener { //
                 true
             }
 
-            allDaysLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                result: ActivityResult ->
-                if (result.resultCode == RESULT_OK) {
-                    Log.d("Result Log", "Fine")
+            allDaysLauncher =
+                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+                    if (result.resultCode == RESULT_OK) {
+                        Log.d("Result Log", "Fine")
+                    }
                 }
-            }
         }
     }
 
-    override fun onDestroy() {
-        // saveDataOnDestroy()
+    override fun onStop() {
+        super.onStop()
+        dbManager.insertToDb(studentsList)
+    }
 
+    override fun onDestroy() {
         super.onDestroy()
-        dbHelper.repopulateDatabase(studentsList)
-        dbHelper.close()
+        dbManager.close()
+    }
+
+    private fun correctAdding() {
+        val tempNamesArray = ArrayList<String>()
+        val tempTimeArray = ArrayList<String>()
+
+        for (item in binding.rcView) {
+            if (
+                item.findViewById<EditText>(R.id.editNameField).text != null &&
+                item.findViewById<EditText>(R.id.editTimeField).text != null
+            ) {
+                tempNamesArray.add(item.findViewById<EditText>(R.id.editNameField).text.toString())
+                tempTimeArray.add(item.findViewById<EditText>(R.id.editTimeField).text.toString())
+            }
+        }
+
+        val lesson = Lesson(lessonsCount, null, null)
+        adapter.addLesson(lesson)
+
+        binding.apply {
+            for (item in 0 until tempNamesArray.size) {
+                rcView[item].findViewById<EditText>(R.id.editNameField)
+                    .setText(tempNamesArray[item])
+                rcView[item].findViewById<EditText>(R.id.editTimeField).setText(tempTimeArray[item])
+            }
+        }
     }
 
     override fun onItemClick(position: Int) {
@@ -161,79 +182,22 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener { //
         for (item in binding.rcView) {
             for (student in neededStudentIndex until studentsList.size) {
                 if (studentsList[student].day.equals(dayString)) {
-                    item.findViewById<EditText>(R.id.editNameField).setText(studentsList[student].name)
-                    item.findViewById<EditText>(R.id.editTimeField).setText(studentsList[student].time)
+                    item.findViewById<EditText>(R.id.editNameField)
+                        .setText(studentsList[student].name)
+                    item.findViewById<EditText>(R.id.editTimeField)
+                        .setText(studentsList[student].time)
 
                     isFindNeededStudent = true
                 }
                 if (isFindNeededStudent) {
                     neededStudentIndex++
                     break
-                }
-                else
+                } else
                     neededStudentIndex++
             }
 
             isFindNeededStudent = false
         }
-    }
-
-    private fun fillStudentsList() {
-        if (studentsList.isEmpty()) {
-            studentsList.clear()
-        }
-
-        val namesReader = BufferedReader(FileReader(namesTextFile))
-        val timeReader = BufferedReader(FileReader(timeTextFile))
-        val daysReader = BufferedReader(FileReader(daysTextFile))
-
-        val tempStudent = StudentInfo(null, null, null, null)
-        val namesArray = ArrayList<String>()
-        val timeArray = ArrayList<String>()
-        val daysArray = ArrayList<String>()
-
-        var lineInNames: String? = namesReader.readLine()
-        var lineInTime: String? = timeReader.readLine()
-        var lineInDays: String? = daysReader.readLine()
-        while (lineInNames != null) {
-            namesArray.add(lineInNames)
-            lineInNames = namesReader.readLine()
-        }
-        while (lineInTime != null) {
-            timeArray.add(lineInTime)
-            lineInTime = timeReader.readLine()
-        }
-        while (lineInDays != null) {
-            daysArray.add(lineInDays)
-            lineInDays = daysReader.readLine()
-        }
-
-        for (index in 0 until namesArray.size) {
-            tempStudent.name = namesArray[index]
-            tempStudent.time = timeArray[index]
-            tempStudent.day = daysArray[index]
-
-            studentsList.add(tempStudent)
-        }
-
-        namesReader.close()
-        timeReader.close()
-        daysReader.close()
-    }
-
-    private fun saveDataOnDestroy() {
-        for (item in studentsList) {
-            namesWriter.write(item.name)
-            namesWriter.newLine()
-            timeWriter.write(item.time)
-            timeWriter.newLine()
-            daysWriter.write(item.day)
-            daysWriter.newLine()
-        }
-
-        namesWriter.close()
-        timeWriter.close()
-        daysWriter.close()
     }
 
     private fun saveData() {
@@ -250,26 +214,12 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener { //
 
         for (item in binding.rcView) {
             val tempStudent = StudentInfo(null, null, null, null)
-            isHaveThatStudent = false
 
             tempStudent.name = item.findViewById<EditText>(R.id.editNameField).text?.toString()
             tempStudent.time = item.findViewById<EditText>(R.id.editTimeField).text?.toString()
-            tempStudent.day = setDay(whatDayIndex)
+            tempStudent.day = dayString
 
-            for (student in studentsList) {
-                if (
-                    student.name.equals(tempStudent.name) &&
-                    student.time.equals(tempStudent.time) &&
-                    student.day.equals(tempStudent.day)
-                ) {
-                    isHaveThatStudent = true
-                    break
-                }
-            }
-
-            if (!isHaveThatStudent) {
-                studentsList.add(tempStudent)
-            }
+            studentsList.add(tempStudent)
         }
     }
 
