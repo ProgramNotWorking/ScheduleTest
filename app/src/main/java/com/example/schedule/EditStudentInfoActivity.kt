@@ -20,62 +20,52 @@ class EditStudentInfoActivity : AppCompatActivity() {
         binding = ActivityEditStudentInfoBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setDayTextView()
-        val isChanged = intent.getBooleanExtra(IntentConstaces.IS_CHANGED, false)
-        if (isChanged) {
-            changeInfo()
-        } else {
-            setInfo()
-        }
+        init()
     }
 
-    private fun changeInfo() {
+    private fun init() {
         binding.apply {
-            // setDayTextView()
+            setDayTextView()
             setOnTouchCloseKeyboard()
 
-            nameSetTextField.setText(intent.getStringExtra(IntentConstaces.NAME_CHANGE))
-            timeSetTextField.setText(intent.getStringExtra(IntentConstaces.TIME_CHANGE))
+            if (intent.getBooleanExtra(IntentConstaces.IS_CHANGED, false)) {
+                nameSetTextField.setText(intent.getStringExtra(IntentConstaces.NAME_EDIT))
+                timeSetTextField.setText(intent.getStringExtra(IntentConstaces.TIME_EDIT))
 
-            saveButton.setOnClickListener {
-                studentName = findViewById<EditText>(R.id.nameSetTextField).text.toString()
-                lessonTime = findViewById<EditText>(R.id.timeSetTextField).text.toString()
+                saveButton.setOnClickListener {
+                    studentName = findViewById<EditText>(R.id.nameSetTextField).text.toString()
+                    lessonTime = findViewById<EditText>(R.id.timeSetTextField).text.toString()
 
-                val intent = Intent(
-                    this@EditStudentInfoActivity, MainActivity::class.java
-                )
-                intent.putExtra(IntentConstaces.NAME_CHANGE, studentName)
-                intent.putExtra(IntentConstaces.TIME_CHANGE, lessonTime)
-                intent.putExtra(IntentConstaces.DAY, whatDay)
-                intent.putExtra(IntentConstaces.IS_CHANGED_FROM_INFO, true)
+                    val intent = Intent(
+                        this@EditStudentInfoActivity, MainActivity::class.java
+                    )
+                    intent.putExtra(IntentConstaces.NAME_EDIT, studentName)
+                    intent.putExtra(IntentConstaces.TIME_EDIT, lessonTime)
+                    intent.putExtra(IntentConstaces.DAY_EDIT, whatDay)
+                    intent.putExtra(IntentConstaces.IS_CHANGED_FROM_INFO, true)
 
-                intent.putExtra("1", 1)
+                    setResult(RESULT_OK, intent)
+                    finish()
+                }
+            } else {
+//                nameSetTextField.setText(intent.getStringExtra(IntentConstaces.NAME_CHANGE))
+//                timeSetTextField.setText(intent.getStringExtra(IntentConstaces.TIME_CHANGE))
 
-                setResult(RESULT_OK, intent)
-                finish()
-            }
-        }
-    }
+                saveButton.setOnClickListener {
+                    studentName = findViewById<EditText>(R.id.nameSetTextField).text.toString()
+                    lessonTime = findViewById<EditText>(R.id.timeSetTextField).text.toString()
 
-    private fun setInfo() {
-        binding.apply {
-            // setDayTextView()
-            setOnTouchCloseKeyboard()
+                    val intent = Intent(
+                        this@EditStudentInfoActivity, MainActivity::class.java
+                    )
+                    intent.putExtra(IntentConstaces.NAME_CHANGE, studentName)
+                    intent.putExtra(IntentConstaces.TIME_CHANGE, lessonTime)
+                    intent.putExtra(IntentConstaces.DAY, whatDay)
+                    intent.putExtra(IntentConstaces.IS_CHANGED_FROM_INFO, false)
 
-            saveButton.setOnClickListener {
-                studentName = findViewById<EditText>(R.id.nameSetTextField).text.toString()
-                lessonTime = findViewById<EditText>(R.id.timeSetTextField).text.toString()
-
-                val intent = Intent(
-                    this@EditStudentInfoActivity, MainActivity::class.java
-                )
-                intent.putExtra(IntentConstaces.NAME_EDIT, studentName)
-                intent.putExtra(IntentConstaces.TIME_EDIT, lessonTime)
-                intent.putExtra(IntentConstaces.DAY_EDIT, whatDay)
-                intent.putExtra(IntentConstaces.IS_CHANGED_FROM_INFO, false)
-
-                setResult(RESULT_OK, intent)
-                finish()
+                    setResult(RESULT_OK, intent)
+                    finish()
+                }
             }
         }
     }
