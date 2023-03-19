@@ -1,43 +1,36 @@
 package com.example.schedule
 
-import android.content.Context
 import android.content.Intent
-import android.graphics.Rect
-import android.inputmethodservice.InputMethodService
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import android.view.View
-import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
-import android.widget.Toast
+import android.widget.TextView
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.getSystemService
 import androidx.core.view.GravityCompat
 import androidx.core.view.get
 import androidx.core.view.iterator
-import androidx.core.view.size
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.schedule.databinding.ActivityMainBinding
 import com.example.schedule.db.DatabaseManager
 
-class MainActivity : AppCompatActivity(),
-    LessonAdapter.OnItemClickListener { // check OnClickDelete method
+class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
+    LessonAdapter.OnEditClickListener {
     private lateinit var binding: ActivityMainBinding
-    private val adapter = LessonAdapter(this)
+    private val adapter = LessonAdapter(this, this)
     private var allDaysLauncher: ActivityResultLauncher<Intent>? = null
-    private var isKeyboardVisible = false
+    private lateinit var editStudentInfoLauncher: ActivityResultLauncher<Intent>
 
     private lateinit var studentsList: MutableList<StudentInfo>
 
-    private val tempNamesArrayForRcViewAdding = ArrayList<String?>()
-    private val tempTimeArrayForRcViewAdding = ArrayList<String?>()
+    private var testText: String? = null
 
     private var lessonsCount = 0
     private var whatDayIndex = 0
+    private var editItemPosition = 0
+    private var isChangeStudentInfo = false
 
     private val dbManager = DatabaseManager(this)
 
@@ -58,7 +51,7 @@ class MainActivity : AppCompatActivity(),
             whatDayTextView.text = getString(R.string.monday)
 
             navigationView.setNavigationItemSelectedListener {
-                menu_init(it) // <------ check inner of this
+                menu_init(it)
                 drawer.closeDrawer(GravityCompat.START)
                 true
             }
@@ -66,13 +59,19 @@ class MainActivity : AppCompatActivity(),
             bottomNavigationView.setOnItemSelectedListener {
                 when (it.itemId) {
                     R.id.addLessonId -> {
-                        saveData()
+                        isChangeStudentInfo = false
 
-                        val lesson = Lesson(lessonsCount, null, null)
-                        adapter.addLesson(lesson)
+                        val intent = Intent(
+                            this@MainActivity, EditStudentInfoActivity::class.java
+                        )
+                        intent.putExtra("whatDay", whatDayIndex)
+                        intent.putExtra(IntentConstaces.IS_CHANGED, false)
+                        editStudentInfoLauncher.launch(intent)
+
                         lessonsCount++
                     }
                     R.id.open_menu -> {
+                        Log.d("Test:", testText.toString())
                         saveData()
                         drawer.openDrawer(GravityCompat.START)
                     }
@@ -85,6 +84,57 @@ class MainActivity : AppCompatActivity(),
                 registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
                     if (result.resultCode == RESULT_OK) {
                         Log.d("Result Log", "Fine")
+                    }
+                }
+
+            editStudentInfoLauncher =
+                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+                    if (result.resultCode == RESULT_OK) {
+                        intent = result.data
+
+                        if (isChangeStudentInfo) {
+                            val tempStudent = StudentInfo(
+                                null,
+                                intent.getStringExtra(IntentConstaces.NAME_EDIT),
+                                intent.getStringExtra(IntentConstaces.TIME_EDIT),
+                                intent.getStringExtra(IntentConstaces.DAY_EDIT)
+                            )
+
+                            studentsList.add(tempStudent)
+
+                            val lesson = Lesson(
+                                null,
+                                intent.getStringExtra(IntentConstaces.NAME_EDIT),
+                                intent.getStringExtra(IntentConstaces.TIME_EDIT)
+                            )
+                            adapter.addLesson(lesson)
+                        } else {
+                            binding.rcView[editItemPosition].findViewById<TextView>(R.id.nameTextViewItem).text =
+                                intent.getStringExtra(IntentConstaces.NAME_CHANGE)
+                            binding.rcView[editItemPosition].findViewById<TextView>(R.id.timeTextViewItem).text =
+                                intent.getStringExtra(IntentConstaces.TIME_CHANGE)
+
+                            val tempStudent = StudentInfo(
+                                null,
+                                intent.getStringExtra(IntentConstaces.NAME_CHANGE),
+                                intent.getStringExtra(IntentConstaces.TIME_CHANGE),
+                                intent.getStringExtra(IntentConstaces.DAY)
+                            )
+
+                            var tempIndex = 0
+                            for (student in studentsList) {
+                                if (
+                                    student.name.equals(tempStudent.name) &&
+                                    student.time.equals(tempStudent.time) &&
+                                    student.day.equals(tempStudent.day)
+                                ) {
+                                    break
+                                } else tempIndex++
+                            }
+
+                            studentsList[tempIndex] = tempStudent
+                            isChangeStudentInfo = false
+                        }
                     }
                 }
         }
@@ -100,6 +150,25 @@ class MainActivity : AppCompatActivity(),
         dbManager.close()
     }
 
+    override fun onEditItemClick(position: Int) {
+        isChangeStudentInfo = true
+
+        val intent = Intent(this@MainActivity, EditStudentInfoActivity::class.java)
+        intent.putExtra(
+            IntentConstaces.NAME_CHANGE,
+            binding.rcView[position].findViewById<TextView>(R.id.nameTextViewItem).text.toString()
+        )
+        intent.putExtra(
+            IntentConstaces.TIME_CHANGE,
+            binding.rcView[position].findViewById<TextView>(R.id.timeTextViewItem).text.toString()
+        )
+        intent.putExtra(IntentConstaces.DAY, whatDayIndex)
+        intent.putExtra(IntentConstaces.IS_CHANGED, true)
+
+        editItemPosition = position
+        editStudentInfoLauncher.launch(intent)
+    }
+
     override fun onItemClick(position: Int) {
         val dayString = setDay(whatDayIndex)
         var isDeleteStudent = false
@@ -107,9 +176,13 @@ class MainActivity : AppCompatActivity(),
 
         for (student in studentsList) {
             if (
-                student.name.equals(binding.rcView[position].findViewById<EditText>(R.id.editNameField).text.toString())
+                student.name.equals(
+                    binding.rcView[position].findViewById<TextView>(R.id.nameTextViewItem).text.toString()
+                )
                 &&
-                student.time.equals(binding.rcView[position].findViewById<EditText>(R.id.editTimeField).text.toString())
+                student.time.equals(
+                    binding.rcView[position].findViewById<TextView>(R.id.timeTextViewItem).text.toString()
+                )
                 &&
                 student.day.equals(dayString)
             ) {
@@ -143,8 +216,10 @@ class MainActivity : AppCompatActivity(),
         for (item in binding.rcView) {
             for (student in neededStudentIndex until studentsList.size) {
                 if (studentsList[student].day.equals(dayString)) {
-                    item.findViewById<EditText>(R.id.editNameField).setText(studentsList[student].name)
-                    item.findViewById<EditText>(R.id.editTimeField).setText(studentsList[student].time)
+                    item.findViewById<TextView>(R.id.nameTextViewItem).text =
+                        studentsList[student].name
+                    item.findViewById<TextView>(R.id.timeTextViewItem).text =
+                        studentsList[student].time
 
                     isFindNeededStudent = true
                 }
@@ -173,8 +248,8 @@ class MainActivity : AppCompatActivity(),
         for (item in binding.rcView) {
             val tempStudent = StudentInfo(null, null, null, null)
 
-            tempStudent.name = item.findViewById<EditText>(R.id.editNameField).text?.toString()
-            tempStudent.time = item.findViewById<EditText>(R.id.editTimeField).text?.toString()
+            tempStudent.name = item.findViewById<TextView>(R.id.nameTextViewItem).text?.toString()
+            tempStudent.time = item.findViewById<TextView>(R.id.timeTextViewItem).text?.toString()
             tempStudent.day = dayString
 
             studentsList.add(tempStudent)

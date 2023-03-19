@@ -26,4 +26,6 @@
     <string name="open_menu">Menu</string>
     <string name="saved">Saved</string>
     <string name="back">Back</string>
+    <string name="error" translatable="false">ERROR</string>
+    <string name="edit">Edit</string>
 </resources>
