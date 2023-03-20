@@ -3,17 +3,10 @@ package com.example.schedule
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.recyclerview.widget.GridLayoutManager
 import com.example.schedule.databinding.ActivityAllDaysBinding
 
 class AllDaysActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAllDaysBinding
-    private val mondayAdapter = AllDaysAdapter()
-    private val tuesdayAdapter = AllDaysAdapter()
-    private val wednesdayAdapter = AllDaysAdapter()
-    private val thursdayAdapter = AllDaysAdapter()
-    private val fridayAdapter = AllDaysAdapter()
-    private val saturdayAdapter = AllDaysAdapter()
 
     private lateinit var namesArray: ArrayList<String>
     private lateinit var timeArray: ArrayList<String>
@@ -24,13 +17,52 @@ class AllDaysActivity : AppCompatActivity() {
         binding = ActivityAllDaysBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        init()
+    }
+
+    private fun init() {
         namesArray = intent.getStringArrayListExtra("names") as ArrayList<String>
         timeArray = intent.getStringArrayListExtra("time") as ArrayList<String>
         daysArray = intent.getStringArrayListExtra("days") as ArrayList<String>
 
-        _init_()
+        clearText()
 
         binding.apply {
+            for (item in 0 until daysArray.size) {
+                when (daysArray[item]) {
+                    DaysConstNames.MONDAY -> {
+                        mondayScrollTextItem.append(namesArray[item] + "\n")
+                        mondayScrollTextItem.append(timeArray[item] + "\n")
+                        mondayScrollTextItem.append("\n")
+                    }
+                    DaysConstNames.TUESDAY -> {
+                        tuesdayScrollTextItem.append(namesArray[item] + "\n")
+                        tuesdayScrollTextItem.append(timeArray[item] + "\n")
+                        tuesdayScrollTextItem.append("\n")
+                    }
+                    DaysConstNames.WEDNESDAY -> {
+                        wednesdayScrollTextItem.append(namesArray[item] + "\n")
+                        wednesdayScrollTextItem.append(timeArray[item] + "\n")
+                        wednesdayScrollTextItem.append("\n")
+                    }
+                    DaysConstNames.THURSDAY -> {
+                        thursdayScrollTextItem.append(namesArray[item] + "\n")
+                        thursdayScrollTextItem.append(timeArray[item] + "\n")
+                        thursdayScrollTextItem.append("\n")
+                    }
+                    DaysConstNames.FRIDAY -> {
+                        fridayScrollTextItem.append(namesArray[item] + "\n")
+                        fridayScrollTextItem.append(timeArray[item] + "\n")
+                        fridayScrollTextItem.append("\n")
+                    }
+                    DaysConstNames.SATURDAY -> {
+                        saturdayScrollTextItem.append(namesArray[item] + "\n")
+                        saturdayScrollTextItem.append(timeArray[item] + "\n")
+                        saturdayScrollTextItem.append("\n")
+                    }
+                }
+            }
+
             returnButton.setOnClickListener {
                 setResult(
                     RESULT_OK, Intent(this@AllDaysActivity, MainActivity::class.java)
@@ -40,50 +72,15 @@ class AllDaysActivity : AppCompatActivity() {
         }
     }
 
-    private fun _init_() {
-        binding.apply {
-            mondayDaysRcView.layoutManager = GridLayoutManager(this@AllDaysActivity, 1)
-            tuesdayDaysRcView.layoutManager = GridLayoutManager(this@AllDaysActivity, 1)
-            wednesdayDaysRcView.layoutManager = GridLayoutManager(this@AllDaysActivity, 1)
-            thursdayDaysRcView.layoutManager = GridLayoutManager(this@AllDaysActivity, 1)
-            fridayDaysRcView.layoutManager = GridLayoutManager(this@AllDaysActivity, 1)
-            saturdayDaysRcView.layoutManager = GridLayoutManager(this@AllDaysActivity, 1)
-
-            mondayDaysRcView.adapter = mondayAdapter
-            tuesdayDaysRcView.adapter = tuesdayAdapter
-            wednesdayDaysRcView.adapter = wednesdayAdapter
-            thursdayDaysRcView.adapter = thursdayAdapter
-            fridayDaysRcView.adapter = fridayAdapter
-            saturdayDaysRcView.adapter = saturdayAdapter
-
-            for (item in 0 until daysArray.size) {
-
-                when (daysArray[item]) {
-                    DaysConstNames.MONDAY -> {
-                        val lesson = Lesson(null, namesArray[item], timeArray[item])
-                        mondayAdapter.addLessonInfo(lesson)
-                    }
-                    DaysConstNames.TUESDAY -> {
-                        val lesson = Lesson(null, namesArray[item], timeArray[item])
-                        tuesdayAdapter.addLessonInfo(lesson)
-                    }
-                    DaysConstNames.WEDNESDAY -> {
-                        val lesson = Lesson(null, namesArray[item], timeArray[item])
-                        wednesdayAdapter.addLessonInfo(lesson)
-                    }
-                    DaysConstNames.THURSDAY -> {
-                        val lesson = Lesson(null, namesArray[item], timeArray[item])
-                        thursdayAdapter.addLessonInfo(lesson)
-                    }
-                    DaysConstNames.FRIDAY -> {
-                        val lesson = Lesson(null, namesArray[item], timeArray[item])
-                        fridayAdapter.addLessonInfo(lesson)
-                    }
-                    DaysConstNames.SATURDAY -> {
-                        val lesson = Lesson(null, namesArray[item], timeArray[item])
-                        saturdayAdapter.addLessonInfo(lesson)
-                    }
-                }
+    private fun clearText() {
+        for (item in daysArray) {
+            when(item) {
+                DaysConstNames.MONDAY -> binding.mondayScrollTextItem.text = null
+                DaysConstNames.TUESDAY -> binding.tuesdayScrollTextItem.text = null
+                DaysConstNames.WEDNESDAY -> binding.wednesdayScrollTextItem.text = null
+                DaysConstNames.THURSDAY -> binding.thursdayScrollTextItem.text = null
+                DaysConstNames.FRIDAY -> binding.fridayScrollTextItem.text = null
+                DaysConstNames.SATURDAY -> binding.saturdayScrollTextItem.text = null
             }
         }
     }

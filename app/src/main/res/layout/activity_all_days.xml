@@ -110,112 +110,111 @@
         app:layout_constraintStart_toStartOf="@+id/guideline"
         app:layout_constraintTop_toBottomOf="@+id/linearLayoutForDays">
 
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guidelineFriday"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="1260dp"
-            android:orientation="vertical"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintGuide_begin="528dp" />
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guidelineThursay"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="1260dp"
-            android:orientation="vertical"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintGuide_begin="424dp" />
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guidelineWednesday"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="1260dp"
-            android:orientation="vertical"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintGuide_begin="327dp" />
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guidelineTuesday"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="1260dp"
-            android:orientation="vertical"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintGuide_begin="219dp" />
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guidelineMonday"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="1260dp"
-            android:orientation="vertical"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintGuide_percent="0.18" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/tuesdayDaysRcView"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="0.166"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/guidelineTuesday"
-            app:layout_constraintStart_toStartOf="@+id/guidelineMonday"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/wednesdayDaysRcView"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="0.166"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/guidelineWednesday"
-            app:layout_constraintStart_toStartOf="@+id/guidelineTuesday"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/saturdayDaysRcView"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.166"
+            android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/guidelineFriday"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/thursdayDaysRcView"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.166"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/guidelineThursay"
-            app:layout_constraintStart_toStartOf="@+id/guidelineWednesday"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/fridayDaysRcView"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.166"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/guidelineFriday"
-            app:layout_constraintStart_toStartOf="@+id/guidelineThursay"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/mondayDaysRcView"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="0.166"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/guidelineMonday"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-        </androidx.recyclerview.widget.RecyclerView>
+            <ScrollView
+                android:id="@+id/mondayScrollView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.15">
+
+                <TextView
+                    android:id="@+id/mondayScrollTextItem"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/not_added_yet"
+                    android:textColor="@color/white"
+                    android:textStyle="bold" />
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/tuesdayScrollView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.15">
+
+                <TextView
+                    android:id="@+id/tuesdayScrollTextItem"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/not_added_yet"
+                    android:textColor="@color/white"
+                    android:textStyle="bold" />
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/wednesdayScrollView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.15">
+
+                <TextView
+                    android:id="@+id/wednesdayScrollTextItem"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/not_added_yet"
+                    android:textColor="@color/white"
+                    android:textStyle="bold" />
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/thursdayScrollView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.15">
+
+                <TextView
+                    android:id="@+id/thursdayScrollTextItem"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/not_added_yet"
+                    android:textColor="@color/white"
+                    android:textStyle="bold" />
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/fridayScrollView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.15">
+
+                <TextView
+                    android:id="@+id/fridayScrollTextItem"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/not_added_yet"
+                    android:textColor="@color/white"
+                    android:textStyle="bold" />
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/saturdayScrollView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.15">
+
+                <TextView
+                    android:id="@+id/saturdayScrollTextItem"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/not_added_yet"
+                    android:textColor="@color/white"
+                    android:textStyle="bold" />
+            </ScrollView>
+        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

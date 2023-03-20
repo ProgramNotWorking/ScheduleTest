@@ -19,4 +19,5 @@
     <string name="saved">Сохранено</string>
     <string name="back">Назад</string>
     <string name="edit">Редактировать</string>
+    <string name="not_added_yet">Еще не добавлено</string>
 </resources>

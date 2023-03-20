@@ -48,9 +48,6 @@ class EditStudentInfoActivity : AppCompatActivity() {
                     finish()
                 }
             } else {
-//                nameSetTextField.setText(intent.getStringExtra(IntentConstaces.NAME_CHANGE))
-//                timeSetTextField.setText(intent.getStringExtra(IntentConstaces.TIME_CHANGE))
-
                 saveButton.setOnClickListener {
                     studentName = findViewById<EditText>(R.id.nameSetTextField).text.toString()
                     lessonTime = findViewById<EditText>(R.id.timeSetTextField).text.toString()

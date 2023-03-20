@@ -21,7 +21,7 @@ class LessonAdapter(
                 listener.onItemClick(adapterPosition)
             }
             binding.editStudentInfoButton.setOnClickListener {
-                editListener.onEditItemClick(adapterPosition)
+                editListener.onEditItemClick(adapterPosition) // TODO: work with adapterPosition
             }
         }
 
