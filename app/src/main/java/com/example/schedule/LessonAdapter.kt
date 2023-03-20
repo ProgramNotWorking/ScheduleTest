@@ -38,7 +38,11 @@ class LessonAdapter(
             if (view.id == R.id.deleteStudentButton) {
                 listener.onItemClick(adapterPosition)
             }
+            if (view.id == R.id.editStudentInfoButton) {
+                editListener.onEditItemClick(adapterPosition)
+            }
         }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LessonHolder {
@@ -64,7 +68,7 @@ class LessonAdapter(
     fun removeLesson(position: Int) {
         lessonList.removeAt(position)
         notifyItemRemoved(position)
-        notifyItemRangeChanged(position, lessonList.size)
+        // notifyItemRangeChanged(position, lessonList.size)
     }
 
     interface OnItemClickListener {

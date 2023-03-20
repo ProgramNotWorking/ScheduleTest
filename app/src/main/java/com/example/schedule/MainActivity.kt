@@ -24,13 +24,11 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
     private lateinit var editStudentInfoLauncher: ActivityResultLauncher<Intent>
 
     private lateinit var studentsList: MutableList<StudentInfo>
-
-    private var testText: String? = null
+    private lateinit var countLessonsList: MutableList<Int>
 
     private var lessonsCount = 0
     private var whatDayIndex = 0
     private var editItemPosition = 0
-    private var isChangeStudentInfo = false
 
     private val dbManager = DatabaseManager(this)
 
@@ -42,7 +40,14 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
         dbManager.openDb()
         studentsList = dbManager.readDbData()
 
-        lessonsCount = displayLessonsAndCountIt()
+        countLessonsList = fillLessonsIndexesList()
+
+        val testArray = ArrayList<String?>()
+        for (student in studentsList) {
+            testArray.add(student.day)
+        }
+
+
 
         binding.apply {
             rcView.layoutManager = GridLayoutManager(this@MainActivity, 1)
@@ -51,7 +56,7 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
             whatDayTextView.text = getString(R.string.monday)
 
             navigationView.setNavigationItemSelectedListener {
-                menu_init(it)
+                menuInit(it)
                 drawer.closeDrawer(GravityCompat.START)
                 true
             }
@@ -69,9 +74,9 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
                         lessonsCount++
                     }
                     R.id.open_menu -> {
-                        Log.d("Test:", testText.toString())
-                        // saveData()
                         drawer.openDrawer(GravityCompat.START)
+
+                        Log.d("SUKA", testArray.toString())
                     }
                 }
 
@@ -114,6 +119,8 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
                                 }
                             }
                         } else {
+                            countLessonsList[whatDayIndex]++
+
                             val tempStudent = StudentInfo(
                                 null,
                                 intent.getStringExtra(IntentConstaces.NAME_CHANGE),
@@ -160,8 +167,6 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
         intent.putExtra("whatDay", whatDayIndex)
         intent.putExtra(IntentConstaces.IS_CHANGED, true)
 
-        Log.d("Pos:", position.toString())
-
         editItemPosition = position
         editStudentInfoLauncher.launch(intent)
     }
@@ -170,6 +175,8 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
         val dayString = setDay(whatDayIndex)
         var isDeleteStudent = false
         val tempStudent = StudentInfo(null, null, null, null)
+
+        countLessonsList[whatDayIndex]--
 
         for (student in studentsList) {
             if (
@@ -240,85 +247,38 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
         }
     }
 
-    private fun displayLessonsAndCountIt(): Int {
-        var lessonsIndex = 0
-
-        when (whatDayIndex) {
-            0 -> {
-                for (item in studentsList) {
-                    if (item.day == DaysConstNames.MONDAY) {
-                        val lesson = Lesson(null, item.name, item.time)
-                        adapter.addLesson(lesson)
-                        lessonsIndex++
-                    }
-                }
-            }
-            1 -> {
-                for (item in studentsList) {
-                    if (item.day == DaysConstNames.TUESDAY) {
-                        val lesson = Lesson(null, item.name, item.time)
-                        adapter.addLesson(lesson)
-                        lessonsIndex++
-                    }
-                }
-            }
-            2 -> {
-                for (item in studentsList) {
-                    if (item.day == DaysConstNames.WEDNESDAY) {
-                        val lesson = Lesson(null, item.name, item.time)
-                        adapter.addLesson(lesson)
-                        lessonsIndex++
-                    }
-                }
-            }
-            3 -> {
-                for (item in studentsList) {
-                    if (item.day == DaysConstNames.THURSDAY) {
-                        val lesson = Lesson(null, item.name, item.time)
-                        adapter.addLesson(lesson)
-                        lessonsIndex++
-                    }
-                }
-            }
-            4 -> {
-                for (item in studentsList) {
-                    if (item.day == DaysConstNames.FRIDAY) {
-                        val lesson = Lesson(null, item.name, item.time)
-                        adapter.addLesson(lesson)
-                        lessonsIndex++
-                    }
-                }
-            }
-            5 -> {
-                for (item in studentsList) {
-                    if (item.day == DaysConstNames.SATURDAY) {
-                        val lesson = Lesson(null, item.name, item.time)
-                        adapter.addLesson(lesson)
-                        lessonsIndex++
-                    }
-                }
-            }
-        }
-
-        return lessonsIndex
-    }
-
     private fun clearRcView() {
-        var lessonsOnRcViewCount = 0
+        var deletingIndex = -1
+
         for (student in studentsList) {
             if (student.day.equals(setDay(whatDayIndex))) {
-                lessonsOnRcViewCount++
+                deletingIndex++
             }
         }
 
-        var tempIndex = lessonsOnRcViewCount - 1
-        repeat(lessonsOnRcViewCount) {
-            adapter.removeLesson(tempIndex)
-            tempIndex--
+        if (deletingIndex != -1) {
+            for (item in deletingIndex downTo 0) {
+                adapter.removeLesson(item)
+            }
         }
+
+//
+//        var timesCount = 0
+//
+//        if (countLessonsList[whatDayIndex] != -1) {
+//            for (student in studentsList) {
+//                if (student.day.equals(setDay(whatDayIndex))) {
+//                    timesCount++
+//                }
+//            }
+//        }
+//
+//        for (item in timesCount - 1 until 0) {
+//            adapter.removeLesson(item)
+//        }
     }
 
-    private fun menu_init(it: MenuItem) {
+    private fun menuInit(it: MenuItem) {
         when (it.itemId) {
             R.id.mondayId -> {
                 clearRcView()
@@ -389,5 +349,28 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
             5 -> DaysConstNames.SATURDAY
             else -> null
         }
+    }
+
+    private fun fillLessonsIndexesList(): MutableList<Int> {
+        val dataList = mutableListOf(-1, -1, -1, -1, -1, -1)
+
+        for (student in studentsList) {
+            when (student.day) {
+                DaysConstNames.MONDAY ->
+                    dataList[0]++
+                DaysConstNames.TUESDAY ->
+                    dataList[1]++
+                DaysConstNames.WEDNESDAY ->
+                    dataList[2]++
+                DaysConstNames.THURSDAY ->
+                    dataList[3]++
+                DaysConstNames.FRIDAY ->
+                    dataList[4]++
+                DaysConstNames.SATURDAY ->
+                    dataList[5]++
+            }
+        }
+
+        return dataList
     }
 }

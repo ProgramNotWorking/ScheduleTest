@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import com.example.schedule.DatabaseHelper
 import com.example.schedule.StudentInfo
 
 class DatabaseManager(context: Context) {
@@ -65,6 +66,10 @@ class DatabaseManager(context: Context) {
 
         cursor?.close()
         return dataList
+    }
+
+    fun clear() {
+        db?.delete(DatabaseNames.TABLE_NAME, null, null)
     }
 
     fun close() {
