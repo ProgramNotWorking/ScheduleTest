@@ -362,18 +362,9 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
 
     override fun onItemClick(lesson: Lesson) { // TODO: work on it
        binding.apply {
-           for (item in rcView) {
-               if (
-                   rcView.findViewById<TextView>(R.id.nameTextViewItem).text.toString() == lesson.studentName
-                   &&
-                   rcView.findViewById<TextView>(R.id.timeTextViewItem).text.toString() == lesson.lessonTime
-               ) {
-                   adapter.removeLessonByData(lesson.studentName, lesson.lessonTime)
-                   break
-               }
-           }
+           adapter.removeLessonByString(lesson.studentName, lesson.lessonTime)
 
-           for (student in 0 until  studentsList.size) {
+           for (student in studentsList.indices) {
                if (studentsList[student].name.equals(lesson.studentName)
                    &&
                    studentsList[student].time.equals(lesson.lessonTime)) {

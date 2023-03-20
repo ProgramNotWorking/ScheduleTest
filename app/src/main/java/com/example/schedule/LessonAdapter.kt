@@ -16,14 +16,8 @@ class LessonAdapter(
     inner class LessonHolder(item: View): RecyclerView.ViewHolder(item), View.OnClickListener {
         private val binding = LessonItemBinding.bind(item)
 
-//        init {
-//            binding.deleteStudentButton.setOnClickListener {
-//                listener.onItemClick(adapterPosition)
-//            }
-//            binding.editStudentInfoButton.setOnClickListener {
-//                editListener.onEditItemClick(adapterPosition) // TODO: work with adapterPosition
-//            }
-//        }
+        private var nameText = binding.nameTextViewItem.text.toString()
+        private var timeText = binding.timeTextViewItem.text.toString()
 
         fun bind(
             lesson: Lesson, listenerDelete: OnItemClickListener, listenerEdit: OnEditClickListener
@@ -43,16 +37,6 @@ class LessonAdapter(
         override fun onClick(p0: View?) {
 
         }
-
-//        override fun onClick(view: View) {
-//            if (view.id == R.id.deleteStudentButton) {
-//                listener.onItemClick(adapterPosition)
-//            }
-//            if (view.id == R.id.editStudentInfoButton) {
-//                editListener.onEditItemClick(adapterPosition)
-//            }
-//        }
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LessonHolder {
@@ -81,20 +65,31 @@ class LessonAdapter(
         // notifyItemRangeChanged(position, lessonList.size)
     }
 
-    fun removeLessonByData(name: String?, time: String?) {
-        var index = -1
-        for (item in 0 until lessonList.size) {
-            if (lessonList[item].studentName.equals(name) && lessonList[item].lessonTime.equals(time)) {
-                index = item
+    fun removeLessonByString(name: String?, time: String?) {
+        for (item in lessonList.indices) {
+            if (lessonList[item].studentName == name && lessonList[item].lessonTime == time) {
+                lessonList.removeAt(item)
+                notifyItemRemoved(item)
+
                 break
             }
         }
-
-        if (index != -1) {
-            lessonList.removeAt(index)
-            notifyItemRemoved(index)
-        }
     }
+
+//    fun removeLessonByData(name: String?, time: String?) {
+//        var index = -1
+//        for (item in 0 until lessonList.size) {
+//            if (lessonList[item].studentName.equals(name) && lessonList[item].lessonTime.equals(time)) {
+//                index = item
+//                break
+//            }
+//        }
+//
+//        if (index != -1) {
+//            lessonList.removeAt(index)
+//            notifyItemRemoved(index)
+//        }
+//    }
 
     interface OnItemClickListener {
         fun onItemClick(lesson: Lesson)
