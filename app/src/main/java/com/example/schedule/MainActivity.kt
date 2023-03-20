@@ -1,21 +1,22 @@
 package com.example.schedule
 
 import android.content.Intent
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.core.view.GravityCompat
 import androidx.core.view.iterator
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.schedule.databinding.ActivityMainBinding
 import com.example.schedule.db.DatabaseManager
-import org.w3c.dom.Text
+import java.time.LocalTime
 
 class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
     LessonAdapter.OnEditClickListener {
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
 
     private val dbManager = DatabaseManager(this)
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -93,9 +95,9 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
                             for (item in binding.rcView) {
                                 if (
                                     item.findViewById<TextView>(R.id.nameTextViewItem).text.toString() ==
-                                        nameCrutch &&
+                                    nameCrutch &&
                                     item.findViewById<TextView>(R.id.timeTextViewItem).text.toString() ==
-                                        timeCrutch
+                                    timeCrutch
                                 ) {
                                     item.findViewById<TextView>(R.id.nameTextViewItem).text =
                                         intent.getStringExtra(IntentConstaces.NAME_EDIT)
@@ -113,7 +115,7 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
                                 intent.getStringExtra(IntentConstaces.DAY_EDIT)
                             )
 
-                            for (item in 0 until studentsList.size) {
+                            for (item in studentsList.indices) {
                                 if (
                                     studentsList[item].name.equals(nameCrutch) &&
                                     studentsList[item].time.equals(timeCrutch) &&
@@ -123,6 +125,9 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
                                     break
                                 }
                             }
+
+                            clearRcView()
+                            displayLessons()
                         } else {
                             countLessonsList[whatDayIndex]++
 
@@ -159,73 +164,6 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
         dbManager.close()
     }
 
-//    override fun onItemClick(position: Int) {
-//        val dayString = setDay(whatDayIndex)
-//        var isDeleteStudent = false
-//        val tempStudent = StudentInfo(null, null, null, null)
-//
-//        countLessonsList[whatDayIndex]--
-//
-//        for (student in studentsList) {
-//            if (
-//                student.name.equals(
-//                    binding.rcView[position].findViewById<TextView>(R.id.nameTextViewItem).text.toString()
-//                )
-//                &&
-//                student.time.equals(
-//                    binding.rcView[position].findViewById<TextView>(R.id.timeTextViewItem).text.toString()
-//                )
-//                &&
-//                student.day.equals(dayString)
-//            ) {
-//                isDeleteStudent = true
-//                tempStudent.name = student.name
-//                tempStudent.time = student.time
-//                tempStudent.day = student.day
-//
-//                break
-//            }
-//        }
-//
-//        if (isDeleteStudent) {
-//            for (item in 0 until studentsList.size) {
-//                if (
-//                    studentsList[item].name.equals(tempStudent.name) &&
-//                    studentsList[item].time.equals(tempStudent.time) &&
-//                    studentsList[item].day.equals(tempStudent.day)
-//                ) {
-//                    studentsList.removeAt(item)
-//                    break
-//                }
-//            }
-//        }
-//
-//        adapter.removeLesson(position)
-//        lessonsCount -= 1
-//
-//        var isFindNeededStudent = false
-//        var neededStudentIndex = 0
-//        for (item in binding.rcView) {
-//            for (student in neededStudentIndex until studentsList.size) {
-//                if (studentsList[student].day.equals(dayString)) {
-//                    item.findViewById<TextView>(R.id.nameTextViewItem).text =
-//                        studentsList[student].name
-//                    item.findViewById<TextView>(R.id.timeTextViewItem).text =
-//                        studentsList[student].time
-//
-//                    isFindNeededStudent = true
-//                }
-//                if (isFindNeededStudent) {
-//                    neededStudentIndex++
-//                    break
-//                } else
-//                    neededStudentIndex++
-//            }
-//
-//            isFindNeededStudent = false
-//        }
-//    }
-
     private fun displayLessons() {
         for (student in studentsList) {
             if (student.day.equals(setDay(whatDayIndex))) {
@@ -251,41 +189,48 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun menuInit(it: MenuItem) {
         when (it.itemId) {
             R.id.mondayId -> {
                 clearRcView()
                 whatDayIndex = 0
+                studentsList = sortDataList()
                 displayLessons()
                 binding.whatDayTextView.text = getString(R.string.monday)
             }
             R.id.tuesdayId -> {
                 clearRcView()
                 whatDayIndex = 1
+                studentsList = sortDataList()
                 displayLessons()
                 binding.whatDayTextView.text = getString(R.string.tuesday)
             }
             R.id.wednesdayId -> {
                 clearRcView()
                 whatDayIndex = 2
+                studentsList = sortDataList()
                 displayLessons()
                 binding.whatDayTextView.text = getString(R.string.wednesday)
             }
             R.id.thursdayId -> {
                 clearRcView()
                 whatDayIndex = 3
+                studentsList = sortDataList()
                 displayLessons()
                 binding.whatDayTextView.text = getString(R.string.thursday)
             }
             R.id.fridayId -> {
                 clearRcView()
                 whatDayIndex = 4
+                studentsList = sortDataList()
                 displayLessons()
                 binding.whatDayTextView.text = getString(R.string.friday)
             }
             R.id.saturdayId -> {
                 clearRcView()
                 whatDayIndex = 5
+                studentsList = sortDataList()
                 displayLessons()
                 binding.whatDayTextView.text = getString(R.string.saturday)
             }
@@ -360,19 +305,85 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
         editStudentInfoLauncher.launch(intent)
     }
 
-    override fun onItemClick(lesson: Lesson) { // TODO: work on it
-       binding.apply {
-           adapter.removeLessonByString(lesson.studentName, lesson.lessonTime)
+    override fun onItemClick(lesson: Lesson) {
+        binding.apply {
+            adapter.removeLessonByString(lesson.studentName, lesson.lessonTime)
 
-           for (student in studentsList.indices) {
-               if (studentsList[student].name.equals(lesson.studentName)
-                   &&
-                   studentsList[student].time.equals(lesson.lessonTime)) {
+            for (student in studentsList.indices) {
+                if (studentsList[student].name.equals(lesson.studentName)
+                    &&
+                    studentsList[student].time.equals(lesson.lessonTime)
+                ) {
+                    studentsList.removeAt(student)
+                    break
+                }
+            }
+        }
+    }
 
-                   studentsList.removeAt(student)
-                   break
-               }
-           }
-       }
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun sortDataList(): MutableList<StudentInfo> {
+        val dataList = mutableListOf<StudentInfo>()
+        var whatDay = 0
+
+        val mondayArray = ArrayList<StudentInfo>()
+        val tuesdayArray = ArrayList<StudentInfo>()
+        val wednesdayArray = ArrayList<StudentInfo>()
+        val thursdayArray = ArrayList<StudentInfo>()
+        val fridayArray = ArrayList<StudentInfo>()
+        val saturdayArray = ArrayList<StudentInfo>()
+
+        repeat(6) {
+            for (student in studentsList) {
+                if (student.day.equals(setDay(whatDay))) {
+                    when (whatDay) {
+                        0 -> mondayArray.add(student)
+                        1 -> tuesdayArray.add(student)
+                        2 -> wednesdayArray.add(student)
+                        3 -> thursdayArray.add(student)
+                        4 -> fridayArray.add(student)
+                        5 -> saturdayArray.add(student)
+                    }
+                }
+            }
+            whatDay++
+        }
+
+        addToDataList(dataList, mondayArray)
+        addToDataList(dataList, tuesdayArray)
+        addToDataList(dataList, wednesdayArray)
+        addToDataList(dataList, thursdayArray)
+        addToDataList(dataList, fridayArray)
+        addToDataList(dataList, saturdayArray)
+
+        return dataList
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun sortItemByTime(someDayArray: ArrayList<StudentInfo>): List<String> {
+        val timeArray = listOf<String>()
+
+        for (item in someDayArray) {
+            timeArray.plus(item.time)
+        }
+
+        val sortedTimeArray = timeArray.map {
+            LocalTime.parse(it.replace("-", ":"))
+        }.sorted().map {
+            it.toString().replace(":", "-")
+        }
+
+        return sortedTimeArray
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun addToDataList(dataList: MutableList<StudentInfo>, someDayArray: ArrayList<StudentInfo>) {
+        for (item in sortItemByTime(someDayArray)) {
+            for (student in someDayArray) {
+                if (student.time.equals(item)) {
+                    dataList.add(student)
+                }
+            }
+        }
     }
 }
