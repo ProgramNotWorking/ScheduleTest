@@ -6,15 +6,16 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.GravityCompat
-import androidx.core.view.get
 import androidx.core.view.iterator
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.schedule.databinding.ActivityMainBinding
 import com.example.schedule.db.DatabaseManager
+import org.w3c.dom.Text
 
 class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
     LessonAdapter.OnEditClickListener {
@@ -26,9 +27,10 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
     private lateinit var studentsList: MutableList<StudentInfo>
     private lateinit var countLessonsList: MutableList<Int>
 
-    private var lessonsCount = 0
+    private var nameCrutch = "SUS"
+    private var timeCrutch = "-_-"
+
     private var whatDayIndex = 0
-    private var editItemPosition = 0
 
     private val dbManager = DatabaseManager(this)
 
@@ -39,15 +41,11 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
 
         dbManager.openDb()
         studentsList = dbManager.readDbData()
+        dbManager.close()
+
+        displayLessons()
 
         countLessonsList = fillLessonsIndexesList()
-
-        val testArray = ArrayList<String?>()
-        for (student in studentsList) {
-            testArray.add(student.day)
-        }
-
-
 
         binding.apply {
             rcView.layoutManager = GridLayoutManager(this@MainActivity, 1)
@@ -70,13 +68,9 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
                         intent.putExtra("whatDay", whatDayIndex)
                         intent.putExtra(IntentConstaces.IS_CHANGED, false)
                         editStudentInfoLauncher.launch(intent)
-
-                        lessonsCount++
                     }
                     R.id.open_menu -> {
                         drawer.openDrawer(GravityCompat.START)
-
-                        Log.d("SUKA", testArray.toString())
                     }
                 }
 
@@ -96,23 +90,34 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
                         intent = result.data
 
                         if (intent.getBooleanExtra(IntentConstaces.IS_CHANGED_FROM_INFO, false)) {
-                            binding.rcView[editItemPosition].findViewById<TextView>(R.id.nameTextViewItem).text =
-                                intent.getStringExtra(IntentConstaces.NAME_EDIT)
-                            binding.rcView[editItemPosition].findViewById<TextView>(R.id.timeTextViewItem).text =
-                                intent.getStringExtra(IntentConstaces.TIME_EDIT)
+                            for (item in binding.rcView) {
+                                if (
+                                    item.findViewById<TextView>(R.id.nameTextViewItem).text.toString() ==
+                                        nameCrutch &&
+                                    item.findViewById<TextView>(R.id.timeTextViewItem).text.toString() ==
+                                        timeCrutch
+                                ) {
+                                    item.findViewById<TextView>(R.id.nameTextViewItem).text =
+                                        intent.getStringExtra(IntentConstaces.NAME_EDIT)
+                                    item.findViewById<TextView>(R.id.timeTextViewItem).text =
+                                        intent.getStringExtra(IntentConstaces.TIME_EDIT)
+
+                                    break
+                                }
+                            }
 
                             val tempStudent = StudentInfo(
                                 null,
-                                intent.getStringExtra(IntentConstaces.NAME_CHANGE),
-                                intent.getStringExtra(IntentConstaces.TIME_CHANGE),
-                                intent.getStringExtra(IntentConstaces.DAY)
+                                intent.getStringExtra(IntentConstaces.NAME_EDIT),
+                                intent.getStringExtra(IntentConstaces.TIME_EDIT),
+                                intent.getStringExtra(IntentConstaces.DAY_EDIT)
                             )
 
                             for (item in 0 until studentsList.size) {
                                 if (
-                                    studentsList[item].name.equals(tempStudent.name) &&
-                                    studentsList[item].time.equals(tempStudent.time) &&
-                                    studentsList[item].day.equals(tempStudent.day)
+                                    studentsList[item].name.equals(nameCrutch) &&
+                                    studentsList[item].time.equals(timeCrutch) &&
+                                    studentsList[item].day.equals(setDay(whatDayIndex))
                                 ) {
                                     studentsList[item] = tempStudent
                                     break
@@ -123,21 +128,20 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
 
                             val tempStudent = StudentInfo(
                                 null,
-                                intent.getStringExtra(IntentConstaces.NAME_CHANGE),
-                                intent.getStringExtra(IntentConstaces.TIME_CHANGE),
-                                intent.getStringExtra(IntentConstaces.DAY)
+                                intent.getStringExtra(IntentConstaces.NAME_SET),
+                                intent.getStringExtra(IntentConstaces.TIME_SET),
+                                intent.getStringExtra(IntentConstaces.DAY_SET)
                             )
 
                             studentsList.add(tempStudent)
 
                             val lesson = Lesson(
                                 null,
-                                intent.getStringExtra(IntentConstaces.NAME_CHANGE),
-                                intent.getStringExtra(IntentConstaces.TIME_CHANGE)
+                                intent.getStringExtra(IntentConstaces.NAME_SET),
+                                intent.getStringExtra(IntentConstaces.TIME_SET)
                             )
 
                             adapter.addLesson(lesson)
-                            lessonsCount++
                         }
                     }
                 }
@@ -146,6 +150,7 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
 
     override fun onStop() {
         super.onStop()
+        dbManager.openDb()
         dbManager.insertToDb(studentsList)
     }
 
@@ -154,89 +159,72 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
         dbManager.close()
     }
 
-    override fun onEditItemClick(position: Int) {
-        val intent = Intent(this@MainActivity, EditStudentInfoActivity::class.java)
-        intent.putExtra(
-            IntentConstaces.NAME_EDIT,
-            binding.rcView[position].findViewById<TextView>(R.id.nameTextViewItem).text.toString()
-        )
-        intent.putExtra(
-            IntentConstaces.TIME_EDIT,
-            binding.rcView[position].findViewById<TextView>(R.id.timeTextViewItem).text.toString()
-        )
-        intent.putExtra("whatDay", whatDayIndex)
-        intent.putExtra(IntentConstaces.IS_CHANGED, true)
-
-        editItemPosition = position
-        editStudentInfoLauncher.launch(intent)
-    }
-
-    override fun onItemClick(position: Int) {
-        val dayString = setDay(whatDayIndex)
-        var isDeleteStudent = false
-        val tempStudent = StudentInfo(null, null, null, null)
-
-        countLessonsList[whatDayIndex]--
-
-        for (student in studentsList) {
-            if (
-                student.name.equals(
-                    binding.rcView[position].findViewById<TextView>(R.id.nameTextViewItem).text.toString()
-                )
-                &&
-                student.time.equals(
-                    binding.rcView[position].findViewById<TextView>(R.id.timeTextViewItem).text.toString()
-                )
-                &&
-                student.day.equals(dayString)
-            ) {
-                isDeleteStudent = true
-                tempStudent.name = student.name
-                tempStudent.time = student.time
-                tempStudent.day = student.day
-
-                break
-            }
-        }
-
-        if (isDeleteStudent) {
-            for (item in 0 until studentsList.size) {
-                if (
-                    studentsList[item].name.equals(tempStudent.name) &&
-                    studentsList[item].time.equals(tempStudent.time) &&
-                    studentsList[item].day.equals(tempStudent.day)
-                ) {
-                    studentsList.removeAt(item)
-                    break
-                }
-            }
-        }
-
-        adapter.removeLesson(position)
-        lessonsCount -= 1
-
-        var isFindNeededStudent = false
-        var neededStudentIndex = 0
-        for (item in binding.rcView) {
-            for (student in neededStudentIndex until studentsList.size) {
-                if (studentsList[student].day.equals(dayString)) {
-                    item.findViewById<TextView>(R.id.nameTextViewItem).text =
-                        studentsList[student].name
-                    item.findViewById<TextView>(R.id.timeTextViewItem).text =
-                        studentsList[student].time
-
-                    isFindNeededStudent = true
-                }
-                if (isFindNeededStudent) {
-                    neededStudentIndex++
-                    break
-                } else
-                    neededStudentIndex++
-            }
-
-            isFindNeededStudent = false
-        }
-    }
+//    override fun onItemClick(position: Int) {
+//        val dayString = setDay(whatDayIndex)
+//        var isDeleteStudent = false
+//        val tempStudent = StudentInfo(null, null, null, null)
+//
+//        countLessonsList[whatDayIndex]--
+//
+//        for (student in studentsList) {
+//            if (
+//                student.name.equals(
+//                    binding.rcView[position].findViewById<TextView>(R.id.nameTextViewItem).text.toString()
+//                )
+//                &&
+//                student.time.equals(
+//                    binding.rcView[position].findViewById<TextView>(R.id.timeTextViewItem).text.toString()
+//                )
+//                &&
+//                student.day.equals(dayString)
+//            ) {
+//                isDeleteStudent = true
+//                tempStudent.name = student.name
+//                tempStudent.time = student.time
+//                tempStudent.day = student.day
+//
+//                break
+//            }
+//        }
+//
+//        if (isDeleteStudent) {
+//            for (item in 0 until studentsList.size) {
+//                if (
+//                    studentsList[item].name.equals(tempStudent.name) &&
+//                    studentsList[item].time.equals(tempStudent.time) &&
+//                    studentsList[item].day.equals(tempStudent.day)
+//                ) {
+//                    studentsList.removeAt(item)
+//                    break
+//                }
+//            }
+//        }
+//
+//        adapter.removeLesson(position)
+//        lessonsCount -= 1
+//
+//        var isFindNeededStudent = false
+//        var neededStudentIndex = 0
+//        for (item in binding.rcView) {
+//            for (student in neededStudentIndex until studentsList.size) {
+//                if (studentsList[student].day.equals(dayString)) {
+//                    item.findViewById<TextView>(R.id.nameTextViewItem).text =
+//                        studentsList[student].name
+//                    item.findViewById<TextView>(R.id.timeTextViewItem).text =
+//                        studentsList[student].time
+//
+//                    isFindNeededStudent = true
+//                }
+//                if (isFindNeededStudent) {
+//                    neededStudentIndex++
+//                    break
+//                } else
+//                    neededStudentIndex++
+//            }
+//
+//            isFindNeededStudent = false
+//        }
+//    }
 
     private fun displayLessons() {
         for (student in studentsList) {
@@ -261,21 +249,6 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
                 adapter.removeLesson(item)
             }
         }
-
-//
-//        var timesCount = 0
-//
-//        if (countLessonsList[whatDayIndex] != -1) {
-//            for (student in studentsList) {
-//                if (student.day.equals(setDay(whatDayIndex))) {
-//                    timesCount++
-//                }
-//            }
-//        }
-//
-//        for (item in timesCount - 1 until 0) {
-//            adapter.removeLesson(item)
-//        }
     }
 
     private fun menuInit(it: MenuItem) {
@@ -372,5 +345,43 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
         }
 
         return dataList
+    }
+
+    override fun onEditItemClick(lesson: Lesson) {
+        val intent = Intent(this@MainActivity, EditStudentInfoActivity::class.java)
+        intent.putExtra(IntentConstaces.NAME_EDIT, lesson.studentName)
+        intent.putExtra(IntentConstaces.TIME_EDIT, lesson.lessonTime)
+        intent.putExtra("whatDay", whatDayIndex)
+        intent.putExtra(IntentConstaces.IS_CHANGED, true)
+
+        nameCrutch = lesson.studentName.toString()
+        timeCrutch = lesson.lessonTime.toString()
+
+        editStudentInfoLauncher.launch(intent)
+    }
+
+    override fun onItemClick(lesson: Lesson) { // TODO: work on it
+       binding.apply {
+           for (item in rcView) {
+               if (
+                   rcView.findViewById<TextView>(R.id.nameTextViewItem).text.toString() == lesson.studentName
+                   &&
+                   rcView.findViewById<TextView>(R.id.timeTextViewItem).text.toString() == lesson.lessonTime
+               ) {
+                   adapter.removeLessonByData(lesson.studentName, lesson.lessonTime)
+                   break
+               }
+           }
+
+           for (student in 0 until  studentsList.size) {
+               if (studentsList[student].name.equals(lesson.studentName)
+                   &&
+                   studentsList[student].time.equals(lesson.lessonTime)) {
+
+                   studentsList.removeAt(student)
+                   break
+               }
+           }
+       }
     }
 }

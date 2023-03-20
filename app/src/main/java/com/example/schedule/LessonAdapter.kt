@@ -16,32 +16,42 @@ class LessonAdapter(
     inner class LessonHolder(item: View): RecyclerView.ViewHolder(item), View.OnClickListener {
         private val binding = LessonItemBinding.bind(item)
 
-        init {
-            binding.deleteStudentButton.setOnClickListener {
-                listener.onItemClick(adapterPosition)
+//        init {
+//            binding.deleteStudentButton.setOnClickListener {
+//                listener.onItemClick(adapterPosition)
+//            }
+//            binding.editStudentInfoButton.setOnClickListener {
+//                editListener.onEditItemClick(adapterPosition) // TODO: work with adapterPosition
+//            }
+//        }
+
+        fun bind(
+            lesson: Lesson, listenerDelete: OnItemClickListener, listenerEdit: OnEditClickListener
+        ) = with(binding) {
+            nameTextViewItem.text = lesson.studentName
+            timeTextViewItem.text = lesson.lessonTime
+
+            deleteStudentButton.setOnClickListener {
+                listenerDelete.onItemClick(lesson)
             }
-            binding.editStudentInfoButton.setOnClickListener {
-                editListener.onEditItemClick(adapterPosition) // TODO: work with adapterPosition
+
+            editStudentInfoButton.setOnClickListener {
+                listenerEdit.onEditItemClick(lesson)
             }
         }
 
-        fun bind(lesson: Lesson) = with(binding) {
-            if (lesson.studentName != null) {
-                nameTextViewItem.text = lesson.studentName
-            }
-            if (lesson.lessonTime != null) {
-                timeTextViewItem.text = lesson.lessonTime
-            }
+        override fun onClick(p0: View?) {
+
         }
 
-        override fun onClick(view: View) {
-            if (view.id == R.id.deleteStudentButton) {
-                listener.onItemClick(adapterPosition)
-            }
-            if (view.id == R.id.editStudentInfoButton) {
-                editListener.onEditItemClick(adapterPosition)
-            }
-        }
+//        override fun onClick(view: View) {
+//            if (view.id == R.id.deleteStudentButton) {
+//                listener.onItemClick(adapterPosition)
+//            }
+//            if (view.id == R.id.editStudentInfoButton) {
+//                editListener.onEditItemClick(adapterPosition)
+//            }
+//        }
 
     }
 
@@ -54,7 +64,7 @@ class LessonAdapter(
 
     override fun onBindViewHolder(holder: LessonHolder, position: Int) {
         val item = lessonList[position]
-        holder.bind(item)
+        holder.bind(item, listener, editListener)
     }
 
     override fun getItemCount(): Int = lessonList.size
@@ -71,11 +81,26 @@ class LessonAdapter(
         // notifyItemRangeChanged(position, lessonList.size)
     }
 
+    fun removeLessonByData(name: String?, time: String?) {
+        var index = -1
+        for (item in 0 until lessonList.size) {
+            if (lessonList[item].studentName.equals(name) && lessonList[item].lessonTime.equals(time)) {
+                index = item
+                break
+            }
+        }
+
+        if (index != -1) {
+            lessonList.removeAt(index)
+            notifyItemRemoved(index)
+        }
+    }
+
     interface OnItemClickListener {
-        fun onItemClick(position: Int)
+        fun onItemClick(lesson: Lesson)
     }
 
     interface OnEditClickListener {
-        fun onEditItemClick(position: Int)
+        fun onEditItemClick(lesson: Lesson)
     }
 }

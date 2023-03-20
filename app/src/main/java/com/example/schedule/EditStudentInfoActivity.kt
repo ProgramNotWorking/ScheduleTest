@@ -55,9 +55,9 @@ class EditStudentInfoActivity : AppCompatActivity() {
                     val intent = Intent(
                         this@EditStudentInfoActivity, MainActivity::class.java
                     )
-                    intent.putExtra(IntentConstaces.NAME_CHANGE, studentName)
-                    intent.putExtra(IntentConstaces.TIME_CHANGE, lessonTime)
-                    intent.putExtra(IntentConstaces.DAY, whatDay)
+                    intent.putExtra(IntentConstaces.NAME_SET, studentName)
+                    intent.putExtra(IntentConstaces.TIME_SET, lessonTime)
+                    intent.putExtra(IntentConstaces.DAY_SET, whatDay)
                     intent.putExtra(IntentConstaces.IS_CHANGED_FROM_INFO, false)
 
                     setResult(RESULT_OK, intent)
