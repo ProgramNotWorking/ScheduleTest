@@ -195,43 +195,40 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
             R.id.mondayId -> {
                 clearRcView()
                 whatDayIndex = 0
-                studentsList = sortDataList()
-                displayLessons()
+                // studentsList = sortDataList()
+                //displayLessons()
+                displaySortedByTime()
                 binding.whatDayTextView.text = getString(R.string.monday)
             }
             R.id.tuesdayId -> {
                 clearRcView()
                 whatDayIndex = 1
-                studentsList = sortDataList()
-                displayLessons()
+                displaySortedByTime()
                 binding.whatDayTextView.text = getString(R.string.tuesday)
             }
             R.id.wednesdayId -> {
                 clearRcView()
                 whatDayIndex = 2
-                studentsList = sortDataList()
-                displayLessons()
+                displaySortedByTime()
                 binding.whatDayTextView.text = getString(R.string.wednesday)
             }
             R.id.thursdayId -> {
                 clearRcView()
                 whatDayIndex = 3
                 studentsList = sortDataList()
-                displayLessons()
+                displaySortedByTime()
                 binding.whatDayTextView.text = getString(R.string.thursday)
             }
             R.id.fridayId -> {
                 clearRcView()
                 whatDayIndex = 4
-                studentsList = sortDataList()
-                displayLessons()
+                displaySortedByTime()
                 binding.whatDayTextView.text = getString(R.string.friday)
             }
             R.id.saturdayId -> {
                 clearRcView()
                 whatDayIndex = 5
-                studentsList = sortDataList()
-                displayLessons()
+                displaySortedByTime()
                 binding.whatDayTextView.text = getString(R.string.saturday)
             }
             R.id.allDaysId -> {
@@ -316,6 +313,54 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
                 ) {
                     studentsList.removeAt(student)
                     break
+                }
+            }
+        }
+    }
+
+    private fun displaySortedByTime() {
+        val dataList = mutableListOf<StudentInfo>()
+
+        for (item in studentsList) {
+            if (item.day.equals(setDay(whatDayIndex))) {
+                dataList.add(item)
+            }
+        }
+
+        val tempArray = arrayListOf<Int>()
+        for (item in dataList.indices) {
+            val tempAddingArray =
+                arrayOf(dataList[item].time?.split("-").toString()
+                    .replace("[", "")
+                    .replace("]", "")
+                    .replace(",", "").split(" ")
+                )
+            tempArray.plus(tempAddingArray[0]).plus(tempAddingArray[1])
+        }
+
+        val arrayToSort = arrayOf<Int>()
+        for (item in tempArray.indices) {
+            if (item % 2 == 0) {
+                tempArray[item] *= 100
+                arrayToSort.plus(tempArray[item] + tempArray[item + 1])
+            }
+        }
+
+        val sortedArrayInt = arrayToSort.sortedArray()
+        val sortedArrayString = arrayOf<String?>()
+        for (item in sortedArrayInt) {
+            sortedArrayString.plus((item / 100).toString() + "-" + (item % 100).toString())
+        }
+
+        var tempIndex = 0
+        if (sortedArrayString.isNotEmpty()) {
+            for (student in studentsList) {
+                if (student.time.equals(sortedArrayString[tempIndex])) {
+                    if (student.time.equals(setDay(whatDayIndex))) {
+                        val lesson = Lesson(null, student.name, student.time)
+                        adapter.addLesson(lesson)
+                        tempIndex++
+                    }
                 }
             }
         }
