@@ -196,7 +196,7 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
                 clearRcView()
                 whatDayIndex = 0
                 // studentsList = sortDataList()
-                //displayLessons()
+                // displayLessons()
                 displaySortedByTime()
                 binding.whatDayTextView.text = getString(R.string.monday)
             }
@@ -327,39 +327,24 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
             }
         }
 
-        val tempArray = arrayListOf<Int>()
-        for (item in dataList.indices) {
-            val tempAddingArray =
-                arrayOf(dataList[item].time?.split("-").toString()
-                    .replace("[", "")
-                    .replace("]", "")
-                    .replace(",", "").split(" ")
-                )
-            tempArray.plus(tempAddingArray[0]).plus(tempAddingArray[1])
+        val sortedArrayInt = ArrayList<Int>()
+        for (item in dataList) {
+            item.time?.replace("-", "")?.toInt()?.let { sortedArrayInt.add(it) }
         }
 
-        val arrayToSort = arrayOf<Int>()
-        for (item in tempArray.indices) {
-            if (item % 2 == 0) {
-                tempArray[item] *= 100
-                arrayToSort.plus(tempArray[item] + tempArray[item + 1])
-            }
-        }
+        sortedArrayInt.sort()
+        if (sortedArrayInt.isNotEmpty()) {
+            for (item in sortedArrayInt) {
+                for (student in dataList) {
+                    val time: String = if (item % 100 == 0) {
+                        (item / 100).toString() + "-00"
+                    } else {
+                        (item / 100).toString() + "-" + (item % 100).toString()
+                    }
 
-        val sortedArrayInt = arrayToSort.sortedArray()
-        val sortedArrayString = arrayOf<String?>()
-        for (item in sortedArrayInt) {
-            sortedArrayString.plus((item / 100).toString() + "-" + (item % 100).toString())
-        }
-
-        var tempIndex = 0
-        if (sortedArrayString.isNotEmpty()) {
-            for (student in studentsList) {
-                if (student.time.equals(sortedArrayString[tempIndex])) {
-                    if (student.time.equals(setDay(whatDayIndex))) {
+                    if (time == student.time) {
                         val lesson = Lesson(null, student.name, student.time)
                         adapter.addLesson(lesson)
-                        tempIndex++
                     }
                 }
             }
