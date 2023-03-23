@@ -62,7 +62,6 @@ class LessonAdapter(
     fun removeLesson(position: Int) {
         lessonList.removeAt(position)
         notifyItemRemoved(position)
-        // notifyItemRangeChanged(position, lessonList.size)
     }
 
     fun removeLessonByString(name: String?, time: String?) {
@@ -75,21 +74,6 @@ class LessonAdapter(
             }
         }
     }
-
-//    fun removeLessonByData(name: String?, time: String?) {
-//        var index = -1
-//        for (item in 0 until lessonList.size) {
-//            if (lessonList[item].studentName.equals(name) && lessonList[item].lessonTime.equals(time)) {
-//                index = item
-//                break
-//            }
-//        }
-//
-//        if (index != -1) {
-//            lessonList.removeAt(index)
-//            notifyItemRemoved(index)
-//        }
-//    }
 
     interface OnItemClickListener {
         fun onItemClick(lesson: Lesson)

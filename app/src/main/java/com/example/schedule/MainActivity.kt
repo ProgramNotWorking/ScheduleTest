@@ -1,7 +1,6 @@
 package com.example.schedule
 
 import android.content.Intent
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -10,13 +9,11 @@ import android.widget.TextView
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.core.view.GravityCompat
 import androidx.core.view.iterator
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.schedule.databinding.ActivityMainBinding
 import com.example.schedule.db.DatabaseManager
-import java.time.LocalTime
 
 class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
     LessonAdapter.OnEditClickListener {
@@ -35,7 +32,6 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
 
     private val dbManager = DatabaseManager(this)
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -45,7 +41,7 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
         studentsList = dbManager.readDbData()
         dbManager.close()
 
-        displayLessons()
+        displaySortedByTime()
 
         countLessonsList = fillLessonsIndexesList()
 
@@ -189,14 +185,11 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun menuInit(it: MenuItem) {
         when (it.itemId) {
             R.id.mondayId -> {
                 clearRcView()
                 whatDayIndex = 0
-                // studentsList = sortDataList()
-                // displayLessons()
                 displaySortedByTime()
                 binding.whatDayTextView.text = getString(R.string.monday)
             }
@@ -215,7 +208,6 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
             R.id.thursdayId -> {
                 clearRcView()
                 whatDayIndex = 3
-                studentsList = sortDataList()
                 displaySortedByTime()
                 binding.whatDayTextView.text = getString(R.string.thursday)
             }
@@ -239,7 +231,7 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
                 val timeArray = ArrayList<String>()
                 val daysArray = ArrayList<String>()
 
-                for (student in studentsList) { // puts 3 item max
+                for (student in studentsList) {
                     namesArray.add(student.name.toString())
                     timeArray.add(student.time.toString())
                     daysArray.add(student.day.toString())
@@ -329,89 +321,24 @@ class MainActivity : AppCompatActivity(), LessonAdapter.OnItemClickListener,
 
         val sortedArrayInt = ArrayList<Int>()
         for (item in dataList) {
-            item.time?.replace("-", "")?.toInt()?.let { sortedArrayInt.add(it) }
+            item.time?.replace("-", "")?.toInt()?.let {
+                sortedArrayInt.add(it)
+            }
         }
 
         sortedArrayInt.sort()
         if (sortedArrayInt.isNotEmpty()) {
             for (item in sortedArrayInt) {
                 for (student in dataList) {
-                    val time: String = if (item % 100 == 0) {
+                    val time: String = if (item % 100 == 0)
                         (item / 100).toString() + "-00"
-                    } else {
+                    else
                         (item / 100).toString() + "-" + (item % 100).toString()
-                    }
 
                     if (time == student.time) {
                         val lesson = Lesson(null, student.name, student.time)
                         adapter.addLesson(lesson)
                     }
-                }
-            }
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun sortDataList(): MutableList<StudentInfo> {
-        val dataList = mutableListOf<StudentInfo>()
-        var whatDay = 0
-
-        val mondayArray = ArrayList<StudentInfo>()
-        val tuesdayArray = ArrayList<StudentInfo>()
-        val wednesdayArray = ArrayList<StudentInfo>()
-        val thursdayArray = ArrayList<StudentInfo>()
-        val fridayArray = ArrayList<StudentInfo>()
-        val saturdayArray = ArrayList<StudentInfo>()
-
-        repeat(6) {
-            for (student in studentsList) {
-                if (student.day.equals(setDay(whatDay))) {
-                    when (whatDay) {
-                        0 -> mondayArray.add(student)
-                        1 -> tuesdayArray.add(student)
-                        2 -> wednesdayArray.add(student)
-                        3 -> thursdayArray.add(student)
-                        4 -> fridayArray.add(student)
-                        5 -> saturdayArray.add(student)
-                    }
-                }
-            }
-            whatDay++
-        }
-
-        addToDataList(dataList, mondayArray)
-        addToDataList(dataList, tuesdayArray)
-        addToDataList(dataList, wednesdayArray)
-        addToDataList(dataList, thursdayArray)
-        addToDataList(dataList, fridayArray)
-        addToDataList(dataList, saturdayArray)
-
-        return dataList
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun sortItemByTime(someDayArray: ArrayList<StudentInfo>): List<String> {
-        val timeArray = listOf<String>()
-
-        for (item in someDayArray) {
-            timeArray.plus(item.time)
-        }
-
-        val sortedTimeArray = timeArray.map {
-            LocalTime.parse(it.replace("-", ":"))
-        }.sorted().map {
-            it.toString().replace(":", "-")
-        }
-
-        return sortedTimeArray
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun addToDataList(dataList: MutableList<StudentInfo>, someDayArray: ArrayList<StudentInfo>) {
-        for (item in sortItemByTime(someDayArray)) {
-            for (student in someDayArray) {
-                if (student.time.equals(item)) {
-                    dataList.add(student)
                 }
             }
         }
